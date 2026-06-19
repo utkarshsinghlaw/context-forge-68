@@ -28,7 +28,7 @@ import { TasksPanel } from "@/components/app/workspace/tasks-panel";
 import { DocumentsPanel } from "@/components/app/workspace/documents-panel";
 import { MemoryPanel } from "@/components/app/workspace/memory-panel";
 import { AskPanel } from "@/components/app/workspace/ask-panel";
-import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare } from "lucide-react";
+import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -78,6 +78,13 @@ function WorkspacePage() {
         group: "This workspace",
         icon: CheckSquare,
         run: () => setTab("tasks"),
+      },
+      {
+        id: "ws-ask-ai",
+        label: "Ask AI about this workspace",
+        group: "This workspace",
+        icon: Sparkles,
+        run: () => setTab("ask"),
       },
     ],
     [workspaceId],
