@@ -41,7 +41,6 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
       sources.push({ source_type: "memory", source_id: m.id, source_title: m.title, workspace_id: null, text: `${m.title}\n\n${m.content ?? ""}` });
 
     // Build chunk records.
-    const records: Omit<SourceRow, "text"> & { chunk_index: number; content: string }[] = [] as never;
     const pending: { meta: SourceRow; chunk_index: number; content: string }[] = [];
     for (const s of sources) {
       const parts = chunkText(s.text);
