@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      chunks: {
+        Row: {
+          chunk_index: number
+          content: string
+          created_at: string
+          embedding: string | null
+          fts: unknown
+          id: string
+          source_id: string
+          source_title: string
+          source_type: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          fts?: unknown
+          id?: string
+          source_id: string
+          source_title?: string
+          source_type: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          fts?: unknown
+          id?: string
+          source_id?: string
+          source_title?: string
+          source_type?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           content: string
@@ -252,7 +294,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      match_chunks: {
+        Args: {
+          match_count?: number
+          p_workspace_id: string
+          query_embedding: string
+        }
+        Returns: {
+          content: string
+          id: string
+          similarity: number
+          source_id: string
+          source_title: string
+          source_type: string
+        }[]
+      }
     }
     Enums: {
       memory_layer: "working" | "workspace" | "vault"

@@ -27,7 +27,8 @@ import { NotesPanel } from "@/components/app/workspace/notes-panel";
 import { TasksPanel } from "@/components/app/workspace/tasks-panel";
 import { DocumentsPanel } from "@/components/app/workspace/documents-panel";
 import { MemoryPanel } from "@/components/app/workspace/memory-panel";
-import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare } from "lucide-react";
+import { AskPanel } from "@/components/app/workspace/ask-panel";
+import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
   component: WorkspacePage,
 });
 
-const TABS = ["overview", "notes", "tasks", "documents", "memory"] as const;
+const TABS = ["overview", "ask", "notes", "tasks", "documents", "memory"] as const;
 
 function WorkspacePage() {
   const { workspaceId } = Route.useParams();
@@ -77,6 +78,13 @@ function WorkspacePage() {
         group: "This workspace",
         icon: CheckSquare,
         run: () => setTab("tasks"),
+      },
+      {
+        id: "ws-ask-ai",
+        label: "Ask AI about this workspace",
+        group: "This workspace",
+        icon: Sparkles,
+        run: () => setTab("ask"),
       },
     ],
     [workspaceId],
@@ -145,6 +153,9 @@ function WorkspacePage() {
 
         <TabsContent value="overview" className="mt-6">
           <OverviewPanel workspace={workspace} onTab={setTab} />
+        </TabsContent>
+        <TabsContent value="ask" className="mt-6">
+          <AskPanel workspaceId={workspaceId} />
         </TabsContent>
         <TabsContent value="notes" className="mt-6">
           <NotesPanel workspaceId={workspaceId} />
