@@ -166,6 +166,9 @@ function WorkspacePage() {
         <TabsContent value="overview" className="mt-6">
           <OverviewPanel workspace={workspace} onTab={setTab} />
         </TabsContent>
+        <TabsContent value="live" className="mt-6">
+          <SessionsPanel workspaceId={workspaceId} />
+        </TabsContent>
         <TabsContent value="ask" className="mt-6">
           <AskPanel workspaceId={workspaceId} />
         </TabsContent>
