@@ -175,12 +175,14 @@ export async function createDocument(
     .select("*")
     .single();
   if (error) throw error;
+  autoIndex("document", data.id);
   return data;
 }
 
 export async function deleteDocument(id: string) {
   const { error } = await supabase.from("documents").delete().eq("id", id);
   if (error) throw error;
+  autoRemove("document", id);
 }
 
 /* ---------- Memory ---------- */
