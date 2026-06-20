@@ -46,11 +46,11 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
-          Ask questions grounded in this workspace — your notes, documents and memory. Context before AI.
+          Ask questions grounded in this workspace — your notes, documents and memory. Indexing is automatic on every save; use Rebuild only if something looks out of date.
         </p>
         <Button variant="outline" size="sm" disabled={sync.isPending} onClick={() => sync.mutate()}>
           {sync.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
-          Sync knowledge
+          Rebuild index
         </Button>
       </div>
 
@@ -118,7 +118,7 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
         <div className={cn("rounded-2xl border border-dashed border-border p-8 text-center")}>
           <CornerDownLeft className="mx-auto h-6 w-6 text-muted-foreground" />
           <p className="mt-3 text-sm text-muted-foreground">
-            Run <span className="font-medium text-foreground">Sync knowledge</span> first, then ask anything about this workspace.
+            Ask anything about this workspace — your notes, documents and memory are indexed automatically as you save them.
           </p>
         </div>
       )}

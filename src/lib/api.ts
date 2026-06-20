@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { indexSource, removeSource } from "@/lib/ai.functions";
 
 export type Workspace = Tables<"workspaces">;
 export type Note = Tables<"notes">;
@@ -14,6 +15,19 @@ async function uid(): Promise<string> {
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("Not authenticated");
   return data.user.id;
+}
+
+/**
+ * Fire-and-forget auto-indexing. Keeps retrieval in sync on every save/delete
+ * without blocking the UI. Embedding failures are swallowed — the manual
+ * "Sync knowledge" action remains as a full rebuild fallback.
+ */
+type IndexableSource = "note" | "document" | "memory";
+function autoIndex(sourceType: IndexableSource, sourceId: string) {
+  void indexSource({ data: { sourceType, sourceId } }).catch(() => {});
+}
+function autoRemove(sourceType: IndexableSource, sourceId: string) {
+  void removeSource({ data: { sourceType, sourceId } }).catch(() => {});
 }
 
 /* ---------- Workspaces ---------- */
@@ -77,17 +91,20 @@ export async function createNote(workspaceId: string, title = "Untitled", conten
     .select("*")
     .single();
   if (error) throw error;
+  autoIndex("note", data.id);
   return data;
 }
 
 export async function updateNote(id: string, patch: TablesUpdate<"notes">) {
   const { error } = await supabase.from("notes").update(patch).eq("id", id);
   if (error) throw error;
+  if ("title" in patch || "content" in patch) autoIndex("note", id);
 }
 
 export async function deleteNote(id: string) {
   const { error } = await supabase.from("notes").delete().eq("id", id);
   if (error) throw error;
+  autoRemove("note", id);
 }
 
 /* ---------- Tasks ---------- */
@@ -158,12 +175,14 @@ export async function createDocument(
     .select("*")
     .single();
   if (error) throw error;
+  autoIndex("document", data.id);
   return data;
 }
 
 export async function deleteDocument(id: string) {
   const { error } = await supabase.from("documents").delete().eq("id", id);
   if (error) throw error;
+  autoRemove("document", id);
 }
 
 /* ---------- Memory ---------- */
@@ -207,10 +226,12 @@ export async function createMemory(input: {
     .select("*")
     .single();
   if (error) throw error;
+  autoIndex("memory", data.id);
   return data;
 }
 
 export async function deleteMemory(id: string) {
   const { error } = await supabase.from("memory_entries").delete().eq("id", id);
   if (error) throw error;
+  autoRemove("memory", id);
 }
