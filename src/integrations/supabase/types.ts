@@ -209,6 +209,91 @@ export type Database = {
         }
         Relationships: []
       }
+      session_turns: {
+        Row: {
+          citations: Json | null
+          content: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["turn_role"]
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          citations?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["turn_role"]
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          citations?: Json | null
+          content?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["turn_role"]
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_turns_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          started_at: string
+          status: Database["public"]["Enums"]["session_status"]
+          summary: string | null
+          title: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["session_status"]
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          status?: Database["public"]["Enums"]["session_status"]
+          summary?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sessions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           created_at: string
@@ -312,7 +397,9 @@ export type Database = {
     }
     Enums: {
       memory_layer: "working" | "workspace" | "vault"
+      session_status: "live" | "ended"
       task_priority: "low" | "medium" | "high"
+      turn_role: "speaker" | "assistant" | "note"
       workspace_kind:
         | "mba"
         | "recruiting"
@@ -448,7 +535,9 @@ export const Constants = {
   public: {
     Enums: {
       memory_layer: ["working", "workspace", "vault"],
+      session_status: ["live", "ended"],
       task_priority: ["low", "medium", "high"],
+      turn_role: ["speaker", "assistant", "note"],
       workspace_kind: [
         "mba",
         "recruiting",

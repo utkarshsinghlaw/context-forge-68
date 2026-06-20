@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { getWorkspace, deleteWorkspace, createNote } from "@/lib/api";
+import { getWorkspace, deleteWorkspace, createNote, createSession } from "@/lib/api";
 import { kindMeta, colorMeta } from "@/lib/workspace-meta";
 import { useRegisterCommands } from "@/components/app/command-context";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -28,7 +28,8 @@ import { TasksPanel } from "@/components/app/workspace/tasks-panel";
 import { DocumentsPanel } from "@/components/app/workspace/documents-panel";
 import { MemoryPanel } from "@/components/app/workspace/memory-panel";
 import { AskPanel } from "@/components/app/workspace/ask-panel";
-import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare, Sparkles } from "lucide-react";
+import { SessionsPanel } from "@/components/app/workspace/sessions-panel";
+import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare, Sparkles, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
   component: WorkspacePage,
 });
 
-const TABS = ["overview", "ask", "notes", "tasks", "documents", "memory"] as const;
+const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory"] as const;
 
 function WorkspacePage() {
   const { workspaceId } = Route.useParams();
@@ -85,6 +86,17 @@ function WorkspacePage() {
         group: "This workspace",
         icon: Sparkles,
         run: () => setTab("ask"),
+      },
+      {
+        id: "ws-live-session",
+        label: "Start live session",
+        group: "This workspace",
+        icon: Mic,
+        run: async () => {
+          const s = await createSession(workspaceId);
+          qc.invalidateQueries({ queryKey: ["sessions", workspaceId] });
+          navigate({ to: "/session/$sessionId", params: { sessionId: s.id } });
+        },
       },
     ],
     [workspaceId],
@@ -153,6 +165,9 @@ function WorkspacePage() {
 
         <TabsContent value="overview" className="mt-6">
           <OverviewPanel workspace={workspace} onTab={setTab} />
+        </TabsContent>
+        <TabsContent value="live" className="mt-6">
+          <SessionsPanel workspaceId={workspaceId} />
         </TabsContent>
         <TabsContent value="ask" className="mt-6">
           <AskPanel workspaceId={workspaceId} />
