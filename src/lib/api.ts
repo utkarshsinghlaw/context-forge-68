@@ -239,3 +239,94 @@ export async function deleteMemory(id: string) {
   if (error) throw error;
   autoRemove("memory", id);
 }
+
+/* ---------- Live Sessions ---------- */
+export async function listSessions(workspaceId: string): Promise<Session[]> {
+  const { data, error } = await supabase
+    .from("sessions")
+    .select("*")
+    .eq("workspace_id", workspaceId)
+    .order("started_at", { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function getSession(id: string): Promise<Session> {
+  const { data, error } = await supabase.from("sessions").select("*").eq("id", id).single();
+  if (error) throw error;
+  return data;
+}
+
+export async function createSession(workspaceId: string, title = "Live session"): Promise<Session> {
+  const { data, error } = await supabase
+    .from("sessions")
+    .insert({ workspace_id: workspaceId, user_id: await uid(), title })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateSession(id: string, patch: TablesUpdate<"sessions">) {
+  const { error } = await supabase.from("sessions").update(patch).eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteSession(id: string) {
+  const { error } = await supabase.from("sessions").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function listTurns(sessionId: string): Promise<SessionTurn[]> {
+  const { data, error } = await supabase
+    .from("session_turns")
+    .select("*")
+    .eq("session_id", sessionId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function createTurn(
+  sessionId: string,
+  role: TurnRole,
+  content: string,
+): Promise<SessionTurn> {
+  const { data, error } = await supabase
+    .from("session_turns")
+    .insert({ session_id: sessionId, user_id: await uid(), role, content })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteTurn(id: string) {
+  const { error } = await supabase.from("session_turns").delete().eq("id", id);
+  if (error) throw error;
+}
+
+/**
+ * End a session: mark it ended and archive the transcript as a workspace
+ * document so it is auto-indexed into the workspace memory + retrieval store.
+ */
+export async function endSession(session: Session): Promise<void> {
+  const turns = await listTurns(session.id);
+  const transcript = turns
+    .filter((t) => t.role !== "assistant")
+    .map((t) => (t.role === "note" ? `Note: ${t.content}` : t.content))
+    .filter(Boolean)
+    .join("\n\n");
+  const summary = transcript.slice(0, 280);
+
+  await updateSession(session.id, { status: "ended", ended_at: new Date().toISOString(), summary });
+
+  if (transcript.trim()) {
+    const stamp = new Date(session.started_at).toLocaleString();
+    await createDocument(session.workspace_id, {
+      title: `Session transcript — ${session.title} (${stamp})`,
+      content: transcript,
+      file_type: "session",
+    });
+  }
+}
