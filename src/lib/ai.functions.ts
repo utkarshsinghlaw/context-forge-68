@@ -224,7 +224,7 @@ export const askWorkspace = createServerFn({ method: "POST" })
     if (ranked.length === 0) {
       return {
         answer:
-          "I couldn't find anything relevant in this workspace yet. Add notes, documents or memory and click \"Sync knowledge\" to make them searchable.",
+          "I couldn't find anything relevant in this workspace yet. Add notes, documents or memory — they're indexed automatically as you save them.",
         citations: [],
       };
     }
