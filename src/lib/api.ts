@@ -91,17 +91,20 @@ export async function createNote(workspaceId: string, title = "Untitled", conten
     .select("*")
     .single();
   if (error) throw error;
+  autoIndex("note", data.id);
   return data;
 }
 
 export async function updateNote(id: string, patch: TablesUpdate<"notes">) {
   const { error } = await supabase.from("notes").update(patch).eq("id", id);
   if (error) throw error;
+  if ("title" in patch || "content" in patch) autoIndex("note", id);
 }
 
 export async function deleteNote(id: string) {
   const { error } = await supabase.from("notes").delete().eq("id", id);
   if (error) throw error;
+  autoRemove("note", id);
 }
 
 /* ---------- Tasks ---------- */
