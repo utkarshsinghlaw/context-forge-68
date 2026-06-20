@@ -226,10 +226,12 @@ export async function createMemory(input: {
     .select("*")
     .single();
   if (error) throw error;
+  autoIndex("memory", data.id);
   return data;
 }
 
 export async function deleteMemory(id: string) {
   const { error } = await supabase.from("memory_entries").delete().eq("id", id);
   if (error) throw error;
+  autoRemove("memory", id);
 }
