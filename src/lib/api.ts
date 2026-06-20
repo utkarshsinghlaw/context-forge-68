@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { indexSource, removeSource } from "@/lib/ai.functions";
 
 export type Workspace = Tables<"workspaces">;
 export type Note = Tables<"notes">;
@@ -14,6 +15,19 @@ async function uid(): Promise<string> {
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("Not authenticated");
   return data.user.id;
+}
+
+/**
+ * Fire-and-forget auto-indexing. Keeps retrieval in sync on every save/delete
+ * without blocking the UI. Embedding failures are swallowed — the manual
+ * "Sync knowledge" action remains as a full rebuild fallback.
+ */
+type IndexableSource = "note" | "document" | "memory";
+function autoIndex(sourceType: IndexableSource, sourceId: string) {
+  void indexSource({ data: { sourceType, sourceId } }).catch(() => {});
+}
+function autoRemove(sourceType: IndexableSource, sourceId: string) {
+  void removeSource({ data: { sourceType, sourceId } }).catch(() => {});
 }
 
 /* ---------- Workspaces ---------- */
