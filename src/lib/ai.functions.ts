@@ -78,6 +78,81 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
     return { indexed: rows.length, sources: sources.length };
   });
 
+/* ----------------------- Incremental indexing ----------------------- */
+
+const SourceRef = z.object({
+  sourceType: z.enum(["note", "document", "memory"]),
+  sourceId: z.string().uuid(),
+});
+
+/**
+ * Re-embed a single source (note / document / memory) and replace its chunks.
+ * Called automatically after a create or update so retrieval stays live.
+ */
+export const indexSource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => SourceRef.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { sourceType, sourceId } = data;
+    const { embedTexts } = await import("@/lib/ai-gateway.server");
+
+    const table =
+      sourceType === "note" ? "notes" : sourceType === "document" ? "documents" : "memory_entries";
+    const { data: row } = await supabase
+      .from(table)
+      .select("id,title,content,workspace_id")
+      .eq("id", sourceId)
+      .maybeSingle();
+
+    // Always clear stale chunks for this source first.
+    await supabase
+      .from("chunks")
+      .delete()
+      .eq("user_id", userId)
+      .eq("source_type", sourceType)
+      .eq("source_id", sourceId);
+
+    if (!row) return { indexed: 0 };
+
+    const title = (row as { title?: string }).title ?? "";
+    const content = (row as { content?: string }).content ?? "";
+    const workspace_id = (row as { workspace_id?: string | null }).workspace_id ?? null;
+    const parts = chunkText(`${title}\n\n${content}`);
+    if (parts.length === 0) return { indexed: 0 };
+
+    const vectors = await embedTexts(parts);
+    const rows = parts.map((c, i) => ({
+      user_id: userId,
+      workspace_id,
+      source_type: sourceType,
+      source_id: sourceId,
+      source_title: title,
+      chunk_index: i,
+      content: c,
+      embedding: JSON.stringify(vectors[i]),
+    }));
+
+    const { error } = await supabase.from("chunks").insert(rows as never);
+    if (error) throw new Error(error.message);
+    return { indexed: rows.length };
+  });
+
+/** Remove all chunks for a deleted source. */
+export const removeSource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => SourceRef.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await supabase
+      .from("chunks")
+      .delete()
+      .eq("user_id", userId)
+      .eq("source_type", data.sourceType)
+      .eq("source_id", data.sourceId);
+    return { ok: true };
+  });
+
 /* ------------------------------- Ask ------------------------------- */
 
 const AskInput = z.object({
