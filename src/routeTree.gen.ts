@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedWWorkspaceIdRouteImport } from './routes/_authenticated/w.$workspaceId'
+import { Route as AuthenticatedSessionSessionIdRouteImport } from './routes/_authenticated/session.$sessionId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -52,6 +53,12 @@ const AuthenticatedWWorkspaceIdRoute =
     path: '/w/$workspaceId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSessionSessionIdRoute =
+  AuthenticatedSessionSessionIdRouteImport.update({
+    id: '/session/$sessionId',
+    path: '/session/$sessionId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/home': typeof AuthenticatedHomeRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
 export interface FileRoutesByTo {
@@ -67,6 +75,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/home': typeof AuthenticatedHomeRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
 export interface FileRoutesById {
@@ -77,6 +86,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
+  '/_authenticated/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/_authenticated/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
 export interface FileRouteTypes {
@@ -87,9 +97,17 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/home'
     | '/vault'
+    | '/session/$sessionId'
     | '/w/$workspaceId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/sitemap.xml' | '/home' | '/vault' | '/w/$workspaceId'
+  to:
+    | '/'
+    | '/auth'
+    | '/sitemap.xml'
+    | '/home'
+    | '/vault'
+    | '/session/$sessionId'
+    | '/w/$workspaceId'
   id:
     | '__root__'
     | '/'
@@ -98,6 +116,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/home'
     | '/_authenticated/vault'
+    | '/_authenticated/session/$sessionId'
     | '/_authenticated/w/$workspaceId'
   fileRoutesById: FileRoutesById
 }
@@ -159,18 +178,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWWorkspaceIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/session/$sessionId': {
+      id: '/_authenticated/session/$sessionId'
+      path: '/session/$sessionId'
+      fullPath: '/session/$sessionId'
+      preLoaderRoute: typeof AuthenticatedSessionSessionIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
+  AuthenticatedSessionSessionIdRoute: typeof AuthenticatedSessionSessionIdRoute
   AuthenticatedWWorkspaceIdRoute: typeof AuthenticatedWWorkspaceIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
+  AuthenticatedSessionSessionIdRoute: AuthenticatedSessionSessionIdRoute,
   AuthenticatedWWorkspaceIdRoute: AuthenticatedWWorkspaceIdRoute,
 }
 
