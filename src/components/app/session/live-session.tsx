@@ -51,21 +51,49 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
   const { data: turns = [] } = useQuery({
     queryKey: turnsKey,
     queryFn: () => listTurns(sessionId),
-    refetchInterval: 4000,
+    refetchInterval: (query) =>
+      query.state.data && (session?.status === "ended" || ending) ? false : 4000,
   });
 
   const [recording, setRecording] = useState(false);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState("");
+  const [ending, setEnding] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const mountedRef = useRef(true);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      // Tear down any in-flight capture so callbacks don't update an
+      // unmounted component after navigation.
+      const rec = recorderRef.current;
+      if (rec && rec.state !== "inactive") {
+        rec.ondataavailable = null;
+        rec.onstop = null;
+        try {
+          rec.stop();
+        } catch {
+          /* recorder already stopped */
+        }
+      }
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      recorderRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [turns.length]);
 
-  const refresh = () => qc.invalidateQueries({ queryKey: turnsKey });
+  const refresh = () => {
+    if (mountedRef.current) qc.invalidateQueries({ queryKey: turnsKey });
+  };
 
   const startRecording = async () => {
     let stream: MediaStream;
@@ -75,26 +103,34 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
       toast.error("Microphone access is needed to capture audio.");
       return;
     }
+    if (!mountedRef.current) {
+      stream.getTracks().forEach((t) => t.stop());
+      return;
+    }
     const mimeType = ["audio/webm", "audio/mp4"].find((t) => MediaRecorder.isTypeSupported(t));
     if (!mimeType) {
       stream.getTracks().forEach((t) => t.stop());
       toast.error("This browser can't record a supported audio format.");
       return;
     }
+    streamRef.current = stream;
     const rec = new MediaRecorder(stream, { mimeType });
     chunksRef.current = [];
     rec.ondataavailable = (e) => e.data.size > 0 && chunksRef.current.push(e.data);
     rec.onstop = async () => {
       stream.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
       const blob = new Blob(chunksRef.current, { type: rec.mimeType });
       if (blob.size < 1024) {
-        toast.error("That recording was empty — please try again.");
+        if (mountedRef.current) toast.error("That recording was empty — please try again.");
         return;
       }
+      if (!mountedRef.current) return;
       setBusy(true);
       try {
         const audioBase64 = await blobToBase64(blob);
         const { text } = await transcribeFn({ data: { audioBase64, mimeType: blob.type } });
+        if (!mountedRef.current) return;
         if (!text) {
           toast.error("Couldn't hear anything in that clip.");
           return;
@@ -102,9 +138,9 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
         await createTurn(sessionId, "speaker", text);
         refresh();
       } catch (e) {
-        toast.error((e as Error).message || "Transcription failed");
+        if (mountedRef.current) toast.error((e as Error).message || "Transcription failed");
       } finally {
-        setBusy(false);
+        if (mountedRef.current) setBusy(false);
       }
     };
     recorderRef.current = rec;
@@ -135,14 +171,20 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
   };
 
   const end = useMutation({
-    mutationFn: () => endSession(session!),
+    mutationFn: () => {
+      setEnding(true);
+      return endSession(session!);
+    },
     onSuccess: () => {
       toast.success("Session ended and archived to workspace knowledge");
       qc.invalidateQueries({ queryKey: ["session", sessionId] });
       qc.invalidateQueries({ queryKey: ["sessions", session!.workspace_id] });
       navigate({ to: "/w/$workspaceId", params: { workspaceId: session!.workspace_id } });
     },
-    onError: (e: Error) => toast.error(e.message || "Couldn't end session"),
+    onError: (e: Error) => {
+      setEnding(false);
+      toast.error(e.message || "Couldn't end session");
+    },
   });
 
   if (isLoading || !session) {
