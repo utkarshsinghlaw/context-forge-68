@@ -50,7 +50,8 @@ async function parsePdf(file: File): Promise<string> {
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
   const buf = await file.arrayBuffer();
-  const pdf = await pdfjs.getDocument({ data: buf }).promise;
+  const loadingTask = pdfjs.getDocument({ data: buf });
+  const pdf = await loadingTask.promise;
   const pages: string[] = [];
   for (let p = 1; p <= pdf.numPages; p++) {
     const page = await pdf.getPage(p);
@@ -63,7 +64,7 @@ async function parsePdf(file: File): Promise<string> {
     if (text) pages.push(text);
     page.cleanup();
   }
-  await pdf.destroy();
+  await loadingTask.destroy();
   return pages.join("\n\n");
 }
 
