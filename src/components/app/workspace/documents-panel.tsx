@@ -21,7 +21,7 @@ import {
   ACCEPTED_EXTENSIONS,
   isAcceptedFile,
   parseFile,
-} from "@/lib/ingest.client";
+} from "@/lib/ingest";
 
 const ACCEPT_ATTR = ACCEPTED_EXTENSIONS.join(",");
 
