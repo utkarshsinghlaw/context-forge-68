@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { listDocuments, createDocument, deleteDocument } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -17,12 +17,52 @@ import { toast } from "sonner";
 import { FileText, Plus, Trash2, Loader2, UploadCloud } from "lucide-react";
 import { format } from "date-fns";
 import { PanelEmpty } from "./panel-empty";
+import {
+  ACCEPTED_EXTENSIONS,
+  isAcceptedFile,
+  parseFile,
+} from "@/lib/ingest";
+
+const ACCEPT_ATTR = ACCEPTED_EXTENSIONS.join(",");
 
 export function DocumentsPanel({ workspaceId }: { workspaceId: string }) {
   const qc = useQueryClient();
   const key = ["documents", workspaceId];
   const { data: docs = [], isLoading } = useQuery({ queryKey: key, queryFn: () => listDocuments(workspaceId) });
   const [open, setOpen] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function ingestFiles(files: FileList | File[]) {
+    const list = Array.from(files);
+    if (list.length === 0) return;
+    const accepted = list.filter(isAcceptedFile);
+    const rejected = list.length - accepted.length;
+    if (rejected > 0) toast.error(`${rejected} file(s) skipped — unsupported type`);
+    if (accepted.length === 0) return;
+
+    setUploading(true);
+    let ok = 0;
+    for (const file of accepted) {
+      try {
+        const parsed = await parseFile(file);
+        await createDocument(workspaceId, {
+          title: parsed.title,
+          content: parsed.text,
+          file_type: parsed.fileType,
+        });
+        ok++;
+      } catch (e) {
+        toast.error(`${file.name}: ${e instanceof Error ? e.message : "could not import"}`);
+      }
+    }
+    setUploading(false);
+    if (ok > 0) {
+      toast.success(`Imported ${ok} document${ok > 1 ? "s" : ""}`);
+      qc.invalidateQueries({ queryKey: key });
+    }
+  }
 
   return (
     <div>
@@ -30,9 +70,57 @@ export function DocumentsPanel({ workspaceId }: { workspaceId: string }) {
         <p className="text-sm text-muted-foreground">
           Reference material ingested into this workspace.
         </p>
-        <Button variant="outline" onClick={() => setOpen(true)}>
-          <UploadCloud className="h-4 w-4" /> Add document
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" onClick={() => setOpen(true)}>
+            <Plus className="h-4 w-4" /> Paste text
+          </Button>
+          <Button variant="outline" disabled={uploading} onClick={() => inputRef.current?.click()}>
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+            Upload files
+          </Button>
+        </div>
+      </div>
+
+      <input
+        ref={inputRef}
+        type="file"
+        multiple
+        accept={ACCEPT_ATTR}
+        className="hidden"
+        onChange={(e) => {
+          if (e.target.files) ingestFiles(e.target.files);
+          e.target.value = "";
+        }}
+      />
+
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          if (e.dataTransfer.files) ingestFiles(e.dataTransfer.files);
+        }}
+        onClick={() => inputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+        }}
+        className={`mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors ${
+          dragging ? "border-primary bg-accent" : "border-border hover:border-primary/50"
+        }`}
+      >
+        <UploadCloud className="h-6 w-6 text-muted-foreground" />
+        <p className="mt-2 text-sm font-medium">
+          {uploading ? "Importing…" : "Drop files here or click to upload"}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          PDF, Markdown, TXT, CSV, JSON, HTML · up to 25&nbsp;MB each
+        </p>
       </div>
 
       {isLoading ? (
@@ -46,8 +134,8 @@ export function DocumentsPanel({ workspaceId }: { workspaceId: string }) {
           <PanelEmpty
             icon={FileText}
             title="No documents yet"
-            body="Paste text or notes from PDFs, briefs and articles. They become searchable context for this workspace."
-            action={<Button onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Add document</Button>}
+            body="Upload PDFs, briefs and articles, or paste text directly. They become searchable context for this workspace."
+            action={<Button onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Paste text</Button>}
           />
         </div>
       ) : (
