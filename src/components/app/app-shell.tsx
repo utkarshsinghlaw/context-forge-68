@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { listWorkspaces } from "@/lib/api";
 import { kindMeta, colorMeta } from "@/lib/workspace-meta";
 import { useAuth } from "@/hooks/use-auth";
+import { useRoles } from "@/hooks/use-roles";
 import { useTheme } from "@/lib/theme";
 import { CommandProvider, useCommand } from "./command-context";
 import { CommandPalette } from "./command-palette";
@@ -28,12 +29,14 @@ import {
   LogOut,
   Menu,
   ChevronsUpDown,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { isAdmin } = useRoles();
   const { data: workspaces = [] } = useQuery({
     queryKey: ["workspaces"],
     queryFn: listWorkspaces,
@@ -67,6 +70,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <Link to="/vault" onClick={onNavigate} className={navItem(pathname === "/vault")}>
           <Vault className="h-4 w-4" /> Knowledge Vault
         </Link>
+        {isAdmin && (
+          <Link to="/admin" onClick={onNavigate} className={navItem(pathname === "/admin")}>
+            <Shield className="h-4 w-4" /> Admin
+          </Link>
+        )}
       </nav>
 
       <div className="flex items-center justify-between px-1.5">
