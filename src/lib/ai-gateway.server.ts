@@ -75,3 +75,65 @@ export async function chatComplete(messages: ChatMessage[]): Promise<string> {
   };
   return json.choices[0]?.message?.content ?? "";
 }
+
+/**
+ * Open a streaming chat completion. Returns the raw SSE Response from the
+ * gateway; callers parse the `data:` deltas. Throws a friendly error on
+ * non-2xx so the route can surface it before streaming begins.
+ */
+export async function openChatStream(messages: ChatMessage[]): Promise<Response> {
+  const res = await fetch(`${GATEWAY}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      Authorization: `Bearer ${apiKey()}`,
+    },
+    body: JSON.stringify({ model: CHAT_MODEL, messages, temperature: 0.2, stream: true }),
+  });
+  if (!res.ok || !res.body) throw friendlyError(res.status, await res.text());
+  return res;
+}
+
+/**
+ * Transform a gateway SSE stream into a plain-text token stream of the
+ * assistant's `delta.content`. Safe to pipe straight to the browser.
+ */
+export function sseToTextStream(upstream: Response): ReadableStream<Uint8Array> {
+  const reader = upstream.body!.getReader();
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+  let buffer = "";
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      const { done, value } = await reader.read();
+      if (done) {
+        controller.close();
+        return;
+      }
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        const t = line.trim();
+        if (!t.startsWith("data:")) continue;
+        const payload = t.slice(5).trim();
+        if (payload === "[DONE]") {
+          controller.close();
+          return;
+        }
+        try {
+          const json = JSON.parse(payload) as {
+            choices?: { delta?: { content?: string } }[];
+          };
+          const delta = json.choices?.[0]?.delta?.content;
+          if (delta) controller.enqueue(encoder.encode(delta));
+        } catch {
+          /* ignore partial/keepalive frames */
+        }
+      }
+    },
+    cancel(reason) {
+      void reader.cancel(reason);
+    },
+  });
+}
