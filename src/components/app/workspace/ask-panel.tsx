@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
-import { reindexWorkspace, askWorkspace, type Citation } from "@/lib/ai.functions";
+import { reindexWorkspace, type Citation } from "@/lib/ai.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -14,12 +15,23 @@ const sourceIcon: Record<string, typeof StickyNote> = {
   memory: Brain,
 };
 
+function decodeCitations(header: string | null): Citation[] {
+  if (!header) return [];
+  try {
+    const bytes = Uint8Array.from(atob(header), (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes)) as Citation[];
+  } catch {
+    return [];
+  }
+}
+
 export function AskPanel({ workspaceId }: { workspaceId: string }) {
   const reindexFn = useServerFn(reindexWorkspace);
-  const askFn = useServerFn(askWorkspace);
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState<string | null>(null);
+  const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
+  const [streaming, setStreaming] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const sync = useMutation({
     mutationFn: () => reindexFn({ data: { workspaceId } }),
@@ -27,19 +39,45 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
     onError: (e: Error) => toast.error(e.message || "Sync failed"),
   });
 
-  const ask = useMutation({
-    mutationFn: (q: string) => askFn({ data: { workspaceId, question: q } }),
-    onSuccess: (r) => {
-      setAnswer(r.answer);
-      setCitations(r.citations);
-    },
-    onError: (e: Error) => toast.error(e.message || "Ask failed"),
-  });
-
-  const submit = () => {
+  const submit = async () => {
     const q = question.trim();
-    if (!q || ask.isPending) return;
-    ask.mutate(q);
+    if (!q || streaming) return;
+    setStreaming(true);
+    setAnswer("");
+    setCitations([]);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    try {
+      const { data: s } = await supabase.auth.getSession();
+      const token = s.session?.access_token;
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ workspaceId, question: q }),
+        signal: controller.signal,
+      });
+      if (!res.ok || !res.body) {
+        throw new Error((await res.text().catch(() => "")) || "Ask failed");
+      }
+      setCitations(decodeCitations(res.headers.get("x-citations")));
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        setAnswer(acc);
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") toast.error((e as Error).message || "Ask failed");
+    } finally {
+      setStreaming(false);
+      abortRef.current = null;
+    }
   };
 
   return (
@@ -67,26 +105,30 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
         />
         <div className="mt-3 flex items-center justify-between">
           <span className="text-xs text-muted-foreground">⌘/Ctrl + Enter to ask</span>
-          <Button size="sm" disabled={!question.trim() || ask.isPending} onClick={submit}>
-            {ask.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          <Button size="sm" disabled={!question.trim() || streaming} onClick={submit}>
+            {streaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             Ask
           </Button>
         </div>
       </div>
 
-      {ask.isPending && (
+      {streaming && !answer && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> Retrieving context and thinking…
         </div>
       )}
 
-      {answer && !ask.isPending && (
+      {answer && (
         <div className="space-y-4">
           <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
             <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5" /> Answer
+              {streaming && <Loader2 className="h-3 w-3 animate-spin" />}
             </div>
-            <p className="whitespace-pre-wrap text-sm leading-relaxed">{answer}</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+              {answer}
+              {streaming && <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-primary align-middle" />}
+            </p>
           </div>
 
           {citations.length > 0 && (
@@ -114,7 +156,7 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
         </div>
       )}
 
-      {!answer && !ask.isPending && (
+      {!answer && !streaming && (
         <div className={cn("rounded-2xl border border-dashed border-border p-8 text-center")}>
           <CornerDownLeft className="mx-auto h-6 w-6 text-muted-foreground" />
           <p className="mt-3 text-sm text-muted-foreground">

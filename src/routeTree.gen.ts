@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -36,6 +37,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedVaultRoute = AuthenticatedVaultRouteImport.update({
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/home': typeof AuthenticatedHomeRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/api/chat': typeof ApiChatRoute
   '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/home': typeof AuthenticatedHomeRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/api/chat': typeof ApiChatRoute
   '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
+  '/api/chat': typeof ApiChatRoute
   '/_authenticated/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/_authenticated/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/home'
     | '/vault'
+    | '/api/chat'
     | '/session/$sessionId'
     | '/w/$workspaceId'
   fileRoutesByTo: FileRoutesByTo
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/home'
     | '/vault'
+    | '/api/chat'
     | '/session/$sessionId'
     | '/w/$workspaceId'
   id:
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/home'
     | '/_authenticated/vault'
+    | '/api/chat'
     | '/_authenticated/session/$sessionId'
     | '/_authenticated/w/$workspaceId'
   fileRoutesById: FileRoutesById
@@ -137,6 +149,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -167,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/vault': {
@@ -231,6 +251,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
