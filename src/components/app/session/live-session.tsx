@@ -352,8 +352,8 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
             )}
             <Button
               variant="secondary"
-              disabled={suggest.isPending || (!lastSpeaker && !draft.trim())}
-              onClick={() => suggest.mutate(draft.trim() || lastSpeaker?.content || "")}
+              disabled={suggesting || (!lastSpeaker && !draft.trim())}
+              onClick={() => suggest(draft.trim() || lastSpeaker?.content || "")}
             >
               <Sparkles className="h-4 w-4" /> Suggest answer
             </Button>
