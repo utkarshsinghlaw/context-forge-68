@@ -9,7 +9,8 @@ import {
   endSession,
   type SessionTurn,
 } from "@/lib/api";
-import { transcribeTurn, suggestAnswer, type SuggestCitation } from "@/lib/session.functions";
+import { transcribeTurn, type SuggestCitation } from "@/lib/session.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -37,11 +38,20 @@ async function blobToBase64(blob: Blob): Promise<string> {
   return btoa(bin);
 }
 
+function decodeCitations(header: string | null): SuggestCitation[] {
+  if (!header) return [];
+  try {
+    const bytes = Uint8Array.from(atob(header), (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes)) as SuggestCitation[];
+  } catch {
+    return [];
+  }
+}
+
 export function LiveSession({ sessionId }: { sessionId: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const transcribeFn = useServerFn(transcribeTurn);
-  const suggestFn = useServerFn(suggestAnswer);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ["session", sessionId],
@@ -59,11 +69,15 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState("");
   const [ending, setEnding] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestion, setSuggestion] = useState("");
+  const [suggestCitations, setSuggestCitations] = useState<SuggestCitation[]>([]);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const mountedRef = useRef(true);
   const streamRef = useRef<MediaStream | null>(null);
+  const suggestAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -84,12 +98,14 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
       recorderRef.current = null;
+      suggestAbortRef.current?.abort();
+      suggestAbortRef.current = null;
     };
   }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [turns.length]);
+  }, [turns.length, suggestion]);
 
   const refresh = () => {
     if (mountedRef.current) qc.invalidateQueries({ queryKey: turnsKey });
@@ -153,12 +169,61 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
     setRecording(false);
   };
 
-  const suggest = useMutation({
-    mutationFn: (prompt: string) =>
-      suggestFn({ data: { sessionId, workspaceId: session!.workspace_id, prompt } }),
-    onSuccess: () => refresh(),
-    onError: (e: Error) => toast.error(e.message || "Couldn't generate a suggestion"),
-  });
+  const suggest = async (prompt: string) => {
+    const p = prompt.trim();
+    if (!p || suggesting || !session) return;
+    setSuggesting(true);
+    setSuggestion("");
+    setSuggestCitations([]);
+    const controller = new AbortController();
+    suggestAbortRef.current = controller;
+    let acc = "";
+    let cites: SuggestCitation[] = [];
+    try {
+      const { data: s } = await supabase.auth.getSession();
+      const token = s.session?.access_token;
+      if (!token) throw new Error("Your session expired. Please sign in again.");
+      const res = await fetch("/api/session-suggest", {
+        method: "POST",
+        headers: { "content-type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ workspaceId: session.workspace_id, prompt: p }),
+        signal: controller.signal,
+      });
+      if (!res.ok || !res.body) {
+        throw new Error((await res.text().catch(() => "")) || "Couldn't generate a suggestion");
+      }
+      cites = decodeCitations(res.headers.get("x-citations"));
+      if (mountedRef.current) setSuggestCitations(cites);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        if (mountedRef.current) setSuggestion(acc);
+      }
+      if (!acc.trim()) throw new Error("The AI returned an empty answer. Please try again.");
+      // Persist the completed suggestion as an assistant turn (client-side,
+      // since the streaming request is torn down on the edge after it ends).
+      await createTurn(sessionId, "assistant", acc, cites);
+      if (mountedRef.current) {
+        setSuggestion("");
+        setSuggestCitations([]);
+        refresh();
+      }
+    } catch (e) {
+      if ((e as Error).name !== "AbortError") {
+        toast.error((e as Error).message || "Couldn't generate a suggestion");
+        if (mountedRef.current) {
+          setSuggestion("");
+          setSuggestCitations([]);
+        }
+      }
+    } finally {
+      if (mountedRef.current) setSuggesting(false);
+      suggestAbortRef.current = null;
+    }
+  };
 
   const lastSpeaker = [...turns].reverse().find((t) => t.role === "speaker");
 
@@ -241,9 +306,33 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
         ) : (
           turns.map((t) => <TurnBubble key={t.id} turn={t} />)
         )}
-        {suggest.isPending && (
+        {suggesting && !suggestion && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Drafting a grounded answer…
+            <Loader2 className="h-4 w-4 animate-spin" /> Retrieving context and drafting…
+          </div>
+        )}
+        {suggestion && (
+          <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+            <div className="mb-1.5 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-primary">
+              <Sparkles className="h-3.5 w-3.5" /> Suggested answer
+              <Loader2 className="h-3 w-3 animate-spin" />
+            </div>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+              {suggestion}
+              <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-primary align-middle" />
+            </p>
+            {suggestCitations.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {suggestCitations.map((c, i) => {
+                  const Icon = sourceIcon[c.source_type] ?? FileText;
+                  return (
+                    <span key={`${c.source_id}-${i}`} className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground">
+                      <Icon className="h-3 w-3" /> [{i + 1}] {c.source_title || "Untitled"}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </div>

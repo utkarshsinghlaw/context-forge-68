@@ -13,6 +13,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiSessionSuggestRouteImport } from './routes/api/session-suggest'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
@@ -37,6 +38,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionSuggestRoute = ApiSessionSuggestRouteImport.update({
+  id: '/api/session-suggest',
+  path: '/api/session-suggest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiChatRoute = ApiChatRouteImport.update({
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof AuthenticatedHomeRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/session-suggest': typeof ApiSessionSuggestRoute
   '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/home': typeof AuthenticatedHomeRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/session-suggest': typeof ApiSessionSuggestRoute
   '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/session-suggest': typeof ApiSessionSuggestRoute
   '/_authenticated/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/_authenticated/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
 }
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/vault'
     | '/api/chat'
+    | '/api/session-suggest'
     | '/session/$sessionId'
     | '/w/$workspaceId'
   fileRoutesByTo: FileRoutesByTo
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/vault'
     | '/api/chat'
+    | '/api/session-suggest'
     | '/session/$sessionId'
     | '/w/$workspaceId'
   id:
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/home'
     | '/_authenticated/vault'
     | '/api/chat'
+    | '/api/session-suggest'
     | '/_authenticated/session/$sessionId'
     | '/_authenticated/w/$workspaceId'
   fileRoutesById: FileRoutesById
@@ -150,6 +162,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiSessionSuggestRoute: typeof ApiSessionSuggestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -180,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/session-suggest': {
+      id: '/api/session-suggest'
+      path: '/api/session-suggest'
+      fullPath: '/api/session-suggest'
+      preLoaderRoute: typeof ApiSessionSuggestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/chat': {
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiSessionSuggestRoute: ApiSessionSuggestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
