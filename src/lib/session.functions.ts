@@ -69,53 +69,6 @@ export interface SuggestCitation {
   snippet: string;
 }
 
-/**
- * Generate a grounded answer suggestion for a live session and persist it as an
- * assistant turn. Retrieval-augmented over the workspace memory + documents.
- */
-export const suggestAnswer = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => SuggestInput.parse(input))
-  .handler(async ({ data, context }): Promise<{ turnId: string; answer: string; citations: SuggestCitation[] }> => {
-    const { supabase, userId } = context;
-    const { hybridRetrieve } = await import("@/lib/retrieval.server");
-    const { chatComplete } = await import("@/lib/ai-gateway.server");
-
-    const ranked = await hybridRetrieve(supabase, data.workspaceId, data.prompt, 6);
-
-    const citations: SuggestCitation[] = ranked.map((r) => ({
-      source_type: r.source_type,
-      source_id: r.source_id,
-      source_title: r.source_title,
-      snippet: r.snippet,
-    }));
-
-    const contextBlocks = ranked.length
-      ? ranked.map((r, i) => `[${i + 1}] (${r.source_type}: ${r.source_title})\n${r.snippet}`).join("\n\n")
-      : "(no workspace context found)";
-
-    const system =
-      "You are Interview Buddy, a real-time assistant during a live conversation or interview. " +
-      "Draft a concise, confident answer the user can say out loud. Ground it in the provided workspace context and cite sources inline with bracket numbers like [1]. " +
-      "If the context is thin, still give a strong general answer but be honest about gaps. Keep it under 120 words and speakable.";
-
-    const answer = await chatComplete([
-      { role: "system", content: system },
-      { role: "user", content: `Workspace context:\n${contextBlocks}\n\nThey just said / asked:\n${data.prompt}\n\nDraft my answer:` },
-    ]);
-
-    const { data: turn, error } = await supabase
-      .from("session_turns")
-      .insert({
-        session_id: data.sessionId,
-        user_id: userId,
-        role: "assistant",
-        content: answer,
-        citations: citations as never,
-      })
-      .select("id")
-      .single();
-    if (error) throw new Error(error.message);
-
-    return { turnId: turn.id, answer, citations };
-  });
+// Answer suggestions are now streamed via the `/api/session-suggest` route
+// (see src/routes/api/session-suggest.ts) and persisted client-side once the
+// stream completes, mirroring the streaming Ask panel.
