@@ -291,10 +291,17 @@ export async function createTurn(
   sessionId: string,
   role: TurnRole,
   content: string,
+  citations?: unknown,
 ): Promise<SessionTurn> {
   const { data, error } = await supabase
     .from("session_turns")
-    .insert({ session_id: sessionId, user_id: await uid(), role, content })
+    .insert({
+      session_id: sessionId,
+      user_id: await uid(),
+      role,
+      content,
+      ...(citations !== undefined ? { citations: citations as never } : {}),
+    })
     .select("*")
     .single();
   if (error) throw error;

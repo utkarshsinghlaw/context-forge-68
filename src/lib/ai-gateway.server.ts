@@ -97,39 +97,63 @@ export async function openChatStream(messages: ChatMessage[]): Promise<Response>
 /**
  * Transform a gateway SSE stream into a plain-text token stream of the
  * assistant's `delta.content`. Safe to pipe straight to the browser.
+ * If the upstream emits an error frame mid-stream, the stream is errored so
+ * the client's reader rejects instead of silently ending with a partial answer.
  */
 export function sseToTextStream(upstream: Response): ReadableStream<Uint8Array> {
   const reader = upstream.body!.getReader();
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();
   let buffer = "";
+  let emitted = false;
   return new ReadableStream<Uint8Array>({
     async pull(controller) {
-      const { done, value } = await reader.read();
-      if (done) {
-        controller.close();
-        return;
-      }
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? "";
-      for (const line of lines) {
-        const t = line.trim();
-        if (!t.startsWith("data:")) continue;
-        const payload = t.slice(5).trim();
-        if (payload === "[DONE]") {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          if (!emitted) {
+            controller.error(new Error("The AI returned an empty response. Please try again."));
+            return;
+          }
           controller.close();
           return;
         }
-        try {
-          const json = JSON.parse(payload) as {
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          const t = line.trim();
+          if (!t.startsWith("data:")) continue;
+          const payload = t.slice(5).trim();
+          if (payload === "[DONE]") {
+            if (!emitted) {
+              controller.error(new Error("The AI returned an empty response. Please try again."));
+              return;
+            }
+            controller.close();
+            return;
+          }
+          let json: {
             choices?: { delta?: { content?: string } }[];
+            error?: { message?: string };
           };
+          try {
+            json = JSON.parse(payload);
+          } catch {
+            continue; // partial/keepalive frame
+          }
+          if (json.error) {
+            controller.error(new Error(json.error.message || "AI streaming failed"));
+            return;
+          }
           const delta = json.choices?.[0]?.delta?.content;
-          if (delta) controller.enqueue(encoder.encode(delta));
-        } catch {
-          /* ignore partial/keepalive frames */
+          if (delta) {
+            emitted = true;
+            controller.enqueue(encoder.encode(delta));
+          }
         }
+      } catch (err) {
+        controller.error(err instanceof Error ? err : new Error("AI streaming failed"));
       }
     },
     cancel(reason) {
