@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, RefreshCw, Loader2, StickyNote, FileText, Brain, CornerDownLeft } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, StickyNote, FileText, Brain, CornerDownLeft, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const sourceIcon: Record<string, typeof StickyNote> = {
@@ -31,6 +31,7 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
   const [answer, setAnswer] = useState("");
   const [citations, setCitations] = useState<Citation[]>([]);
   const [streaming, setStreaming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const sync = useMutation({
@@ -45,11 +46,13 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
     setStreaming(true);
     setAnswer("");
     setCitations([]);
+    setError(null);
     const controller = new AbortController();
     abortRef.current = controller;
     try {
       const { data: s } = await supabase.auth.getSession();
       const token = s.session?.access_token;
+      if (!token) throw new Error("Your session expired. Please sign in again.");
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -73,7 +76,11 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
         setAnswer(acc);
       }
     } catch (e) {
-      if ((e as Error).name !== "AbortError") toast.error((e as Error).message || "Ask failed");
+      if ((e as Error).name !== "AbortError") {
+        const message = (e as Error).message || "Ask failed";
+        setError(message);
+        toast.error(message);
+      }
     } finally {
       setStreaming(false);
       abortRef.current = null;
@@ -115,6 +122,18 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
       {streaming && !answer && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> Retrieving context and thinking…
+        </div>
+      )}
+
+      {error && (
+        <div className="flex items-start gap-3 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="space-y-2">
+            <p>{error}</p>
+            <Button size="sm" variant="outline" onClick={submit} disabled={streaming}>
+              <RefreshCw className="h-4 w-4" /> Try again
+            </Button>
+          </div>
         </div>
       )}
 
