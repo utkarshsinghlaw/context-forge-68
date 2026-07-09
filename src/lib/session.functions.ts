@@ -56,12 +56,6 @@ export const transcribeTurn = createServerFn({ method: "POST" })
 
 /* ------------------------- Answer suggestion ------------------------- */
 
-const SuggestInput = z.object({
-  sessionId: z.string().uuid(),
-  workspaceId: z.string().uuid(),
-  prompt: z.string().min(1).max(4000),
-});
-
 export interface SuggestCitation {
   source_type: string;
   source_id: string;
