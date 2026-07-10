@@ -34,6 +34,9 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    tab: typeof search.tab === "string" ? search.tab : undefined,
+  }),
   component: WorkspacePage,
 });
 
@@ -41,9 +44,12 @@ const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory"
 
 function WorkspacePage() {
   const { workspaceId } = Route.useParams();
+  const { tab: initialTab } = Route.useSearch();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [tab, setTab] = useState<string>("overview");
+  const [tab, setTab] = useState<string>(
+    initialTab && (TABS as readonly string[]).includes(initialTab) ? initialTab : "overview",
+  );
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: workspace, isLoading, isError } = useQuery({
