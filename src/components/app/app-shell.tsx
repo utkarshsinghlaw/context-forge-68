@@ -67,6 +67,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         <Link to="/home" onClick={onNavigate} className={navItem(pathname === "/home")}>
           <Home className="h-4 w-4" /> Workspaces
         </Link>
+        <Link to="/search" onClick={onNavigate} className={navItem(pathname === "/search")}>
+          <Search className="h-4 w-4" /> Search
+        </Link>
         <Link to="/vault" onClick={onNavigate} className={navItem(pathname === "/vault")}>
           <Vault className="h-4 w-4" /> Knowledge Vault
         </Link>

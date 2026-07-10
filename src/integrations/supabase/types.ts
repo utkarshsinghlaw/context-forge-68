@@ -422,6 +422,18 @@ export type Database = {
           source_type: string
         }[]
       }
+      match_chunks_global: {
+        Args: { match_count?: number; query_embedding: string }
+        Returns: {
+          content: string
+          id: string
+          similarity: number
+          source_id: string
+          source_title: string
+          source_type: string
+          workspace_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
