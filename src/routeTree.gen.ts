@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiSessionSuggestRouteImport } from './routes/api/session-suggest'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
+import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedWWorkspaceIdRouteImport } from './routes/_authenticated/w.$workspaceId'
@@ -55,6 +56,11 @@ const AuthenticatedVaultRoute = AuthenticatedVaultRouteImport.update({
   path: '/vault',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/search': typeof AuthenticatedSearchRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/api/chat': typeof ApiChatRoute
   '/api/session-suggest': typeof ApiSessionSuggestRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/search': typeof AuthenticatedSearchRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/api/chat': typeof ApiChatRoute
   '/api/session-suggest': typeof ApiSessionSuggestRoute
@@ -110,6 +118,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
   '/api/chat': typeof ApiChatRoute
   '/api/session-suggest': typeof ApiSessionSuggestRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/home'
+    | '/search'
     | '/vault'
     | '/api/chat'
     | '/api/session-suggest'
@@ -136,6 +146,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/admin'
     | '/home'
+    | '/search'
     | '/vault'
     | '/api/chat'
     | '/api/session-suggest'
@@ -149,6 +160,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/home'
+    | '/_authenticated/search'
     | '/_authenticated/vault'
     | '/api/chat'
     | '/api/session-suggest'
@@ -216,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVaultRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/search': {
+      id: '/_authenticated/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AuthenticatedSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/home': {
       id: '/_authenticated/home'
       path: '/home'
@@ -250,6 +269,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
   AuthenticatedSessionSessionIdRoute: typeof AuthenticatedSessionSessionIdRoute
   AuthenticatedWWorkspaceIdRoute: typeof AuthenticatedWWorkspaceIdRoute
@@ -258,6 +278,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedSearchRoute: AuthenticatedSearchRoute,
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
   AuthenticatedSessionSessionIdRoute: AuthenticatedSessionSessionIdRoute,
   AuthenticatedWWorkspaceIdRoute: AuthenticatedWWorkspaceIdRoute,

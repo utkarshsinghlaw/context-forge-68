@@ -22,6 +22,7 @@ import {
   Sun,
   LogOut,
   ArrowRight,
+  Search,
 } from "lucide-react";
 
 export function CommandPalette() {
@@ -70,6 +71,9 @@ export function CommandPalette() {
         <CommandGroup heading="Navigate">
           <CommandItem value="home workspaces overview" onSelect={() => go(() => navigate({ to: "/home" }))}>
             <Home className="h-4 w-4" /> All workspaces
+          </CommandItem>
+          <CommandItem value="search everything global find" onSelect={() => go(() => navigate({ to: "/search" }))}>
+            <Search className="h-4 w-4" /> Search everything
           </CommandItem>
           <CommandItem value="knowledge vault" onSelect={() => go(() => navigate({ to: "/vault" }))}>
             <Vault className="h-4 w-4" /> Knowledge Vault
