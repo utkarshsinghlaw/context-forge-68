@@ -31,7 +31,8 @@ import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/home")({
-  validateSearch: (s: Record<string, unknown>) => ({ new: s.new === true || s.new === "true" }),
+  validateSearch: (s: Record<string, unknown>): { new?: boolean } =>
+    s.new === true || s.new === "true" ? { new: true } : {},
   component: HomePage,
 });
 
