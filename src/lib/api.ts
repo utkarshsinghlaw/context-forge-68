@@ -200,6 +200,11 @@ export async function listMemory(opts: {
   } else if (opts.workspaceId) {
     q = q.eq("workspace_id", opts.workspaceId);
   }
+  // Hide expired working-memory entries immediately (the hourly prune job
+  // deletes them from the DB + retrieval index shortly after).
+  if (opts.layer === "working") {
+    q = q.or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
+  }
   const { data, error } = await q.order("updated_at", { ascending: false });
   if (error) throw error;
   return data;
