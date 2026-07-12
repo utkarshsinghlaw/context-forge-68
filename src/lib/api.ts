@@ -14,11 +14,37 @@ export type TurnRole = SessionTurn["role"];
 export type WorkspaceKind = Workspace["kind"];
 export type MemoryLayer = MemoryEntry["layer"];
 export type TaskPriority = Task["priority"];
+export type Profile = Tables<"profiles">;
 
 async function uid(): Promise<string> {
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("Not authenticated");
   return data.user.id;
+}
+
+/* ---------- Profile ---------- */
+export async function getMyProfile(): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", await uid())
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Update the signed-in user's display name in both the profiles table (source
+ * of truth) and auth metadata (so the app shell reflects it immediately).
+ */
+export async function updateMyDisplayName(displayName: string): Promise<void> {
+  const name = displayName.trim();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ display_name: name })
+    .eq("user_id", await uid());
+  if (error) throw error;
+  await supabase.auth.updateUser({ data: { display_name: name } });
 }
 
 /**
