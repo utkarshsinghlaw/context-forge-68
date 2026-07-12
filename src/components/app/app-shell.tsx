@@ -152,6 +152,9 @@ function UserMenu() {
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           {theme === "dark" ? "Light mode" : "Dark mode"}
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
+          <Settings className="h-4 w-4" /> Settings
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {
