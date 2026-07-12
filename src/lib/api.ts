@@ -14,11 +14,37 @@ export type TurnRole = SessionTurn["role"];
 export type WorkspaceKind = Workspace["kind"];
 export type MemoryLayer = MemoryEntry["layer"];
 export type TaskPriority = Task["priority"];
+export type Profile = Tables<"profiles">;
 
 async function uid(): Promise<string> {
   const { data } = await supabase.auth.getUser();
   if (!data.user) throw new Error("Not authenticated");
   return data.user.id;
+}
+
+/* ---------- Profile ---------- */
+export async function getMyProfile(): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", await uid())
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Update the signed-in user's display name in both the profiles table (source
+ * of truth) and auth metadata (so the app shell reflects it immediately).
+ */
+export async function updateMyDisplayName(displayName: string): Promise<void> {
+  const name = displayName.trim();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ display_name: name })
+    .eq("user_id", await uid());
+  if (error) throw error;
+  await supabase.auth.updateUser({ data: { display_name: name } });
 }
 
 /**
@@ -199,6 +225,11 @@ export async function listMemory(opts: {
     q = q.is("workspace_id", null);
   } else if (opts.workspaceId) {
     q = q.eq("workspace_id", opts.workspaceId);
+  }
+  // Hide expired working-memory entries immediately (the hourly prune job
+  // deletes them from the DB + retrieval index shortly after).
+  if (opts.layer === "working") {
+    q = q.or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`);
   }
   const { data, error } = await q.order("updated_at", { ascending: false });
   if (error) throw error;

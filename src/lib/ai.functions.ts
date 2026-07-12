@@ -194,14 +194,18 @@ export const askWorkspace = createServerFn({ method: "POST" })
 
     // 3. Reciprocal-rank fusion merge.
     const scores = new Map<string, { row: Citation; score: number }>();
+    // Key by source_id so repeated chunks of one source collapse to a single citation.
     const add = (id: string, row: Citation, rank: number) => {
       const prev = scores.get(id);
       const inc = 1 / (60 + rank);
-      if (prev) prev.score += inc;
+      if (prev) {
+        prev.score += inc;
+        if (row.similarity > prev.row.similarity) prev.row = row;
+      }
       else scores.set(id, { row, score: inc });
     };
     (vecMatches ?? []).forEach((m, i) =>
-      add(m.id, {
+      add(m.source_id, {
         source_type: m.source_type,
         source_id: m.source_id,
         source_title: m.source_title,
@@ -210,7 +214,7 @@ export const askWorkspace = createServerFn({ method: "POST" })
       }, i),
     );
     (kwMatches ?? []).forEach((m, i) =>
-      add(m.id, {
+      add(m.source_id, {
         source_type: m.source_type,
         source_id: m.source_id,
         source_title: m.source_title,

@@ -30,6 +30,7 @@ import {
   Menu,
   ChevronsUpDown,
   Shield,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +79,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             <Shield className="h-4 w-4" /> Admin
           </Link>
         )}
+        <Link to="/settings" onClick={onNavigate} className={navItem(pathname === "/settings")}>
+          <Settings className="h-4 w-4" /> Settings
+        </Link>
       </nav>
 
       <div className="flex items-center justify-between px-1.5">
@@ -147,6 +151,9 @@ function UserMenu() {
         <DropdownMenuItem onClick={toggle}>
           {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           {theme === "dark" ? "Light mode" : "Dark mode"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => navigate({ to: "/settings" })}>
+          <Settings className="h-4 w-4" /> Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem

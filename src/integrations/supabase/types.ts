@@ -434,6 +434,7 @@ export type Database = {
           workspace_id: string
         }[]
       }
+      prune_expired_memory: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
