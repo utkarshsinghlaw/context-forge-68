@@ -23,6 +23,7 @@ import {
   LogOut,
   ArrowRight,
   Search,
+  Settings,
 } from "lucide-react";
 
 export function CommandPalette() {
