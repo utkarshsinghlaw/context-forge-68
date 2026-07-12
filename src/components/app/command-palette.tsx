@@ -79,6 +79,9 @@ export function CommandPalette() {
           <CommandItem value="knowledge vault" onSelect={() => go(() => navigate({ to: "/vault" }))}>
             <Vault className="h-4 w-4" /> Knowledge Vault
           </CommandItem>
+          <CommandItem value="settings profile account preferences" onSelect={() => go(() => navigate({ to: "/settings" }))}>
+            <Settings className="h-4 w-4" /> Settings
+          </CommandItem>
           <CommandItem value="new create workspace" onSelect={() => go(() => navigate({ to: "/home", search: { new: true } }))}>
             <Plus className="h-4 w-4" /> New workspace
           </CommandItem>
