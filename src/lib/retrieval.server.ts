@@ -40,15 +40,20 @@ export async function hybridRetrieve(
   ]);
 
   const scores = new Map<string, { row: RetrievedSource; score: number }>();
+  // Key by source_id (not chunk id) so multiple chunks of the same note/doc
+  // collapse into a single citation whose score is the fusion of its chunks.
   const add = (id: string, row: RetrievedSource, rank: number) => {
     const prev = scores.get(id);
     const inc = 1 / (60 + rank);
-    if (prev) prev.score += inc;
+    if (prev) {
+      prev.score += inc;
+      if (row.similarity > prev.row.similarity) prev.row = row;
+    }
     else scores.set(id, { row, score: inc });
   };
 
   (vecMatches ?? []).forEach((m, i) =>
-    add(m.id, {
+    add(m.source_id, {
       source_type: m.source_type,
       source_id: m.source_id,
       source_title: m.source_title,
@@ -57,7 +62,7 @@ export async function hybridRetrieve(
     }, i),
   );
   (kwMatches ?? []).forEach((m, i) =>
-    add(m.id, {
+    add(m.source_id, {
       source_type: m.source_type,
       source_id: m.source_id,
       source_title: m.source_title,
