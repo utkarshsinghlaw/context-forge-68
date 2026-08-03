@@ -4,7 +4,9 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -29,21 +31,52 @@ interface CommandCtx {
 
 const Ctx = createContext<CommandCtx | undefined>(undefined);
 
+/**
+ * Registry lives outside React state so children can register during their own
+ * mount effect without triggering a "state update on an unmounted component"
+ * warning in the provider. Subscribers are notified via useSyncExternalStore.
+ */
+function createRegistry() {
+  const map = new Map<string, CommandAction[]>();
+  let snapshot: CommandAction[] = [];
+  const listeners = new Set<() => void>();
+  const emit = () => {
+    snapshot = [...map.values()].flat();
+    listeners.forEach((l) => l());
+  };
+  return {
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    getSnapshot: () => snapshot,
+    register(actions: CommandAction[]) {
+      const key = Math.random().toString(36).slice(2);
+      map.set(key, actions);
+      emit();
+      return () => {
+        if (map.delete(key)) emit();
+      };
+    },
+  };
+}
+
 export function CommandProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const [registries, setRegistries] = useState<Record<string, CommandAction[]>>({});
+  const registryRef = useRef<ReturnType<typeof createRegistry>>();
+  if (!registryRef.current) registryRef.current = createRegistry();
+  const registry = registryRef.current;
 
-  const registerActions = useCallback((actions: CommandAction[]) => {
-    const key = Math.random().toString(36).slice(2);
-    setRegistries((r) => ({ ...r, [key]: actions }));
-    return () => {
-      setRegistries((r) => {
-        const next = { ...r };
-        delete next[key];
-        return next;
-      });
-    };
-  }, []);
+  const registerActions = useCallback(
+    (actions: CommandAction[]) => registry.register(actions),
+    [registry],
+  );
+
+  const actions = useSyncExternalStore(
+    registry.subscribe,
+    registry.getSnapshot,
+    registry.getSnapshot,
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -56,18 +89,13 @@ export function CommandProvider({ children }: { children: ReactNode }) {
     return () => document.removeEventListener("keydown", onKey);
   }, []);
 
-  const actions = useMemo(
-    () => Object.values(registries).flat(),
-    [registries],
+  const toggle = useCallback(() => setOpen((o) => !o), []);
+  const value = useMemo(
+    () => ({ open, setOpen, toggle, actions, registerActions }),
+    [open, toggle, actions, registerActions],
   );
 
-  return (
-    <Ctx.Provider
-      value={{ open, setOpen, toggle: () => setOpen((o) => !o), actions, registerActions }}
-    >
-      {children}
-    </Ctx.Provider>
-  );
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useCommand() {
