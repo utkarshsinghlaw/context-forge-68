@@ -29,6 +29,7 @@ import { DocumentsPanel } from "@/components/app/workspace/documents-panel";
 import { MemoryPanel } from "@/components/app/workspace/memory-panel";
 import { AskPanel } from "@/components/app/workspace/ask-panel";
 import { SessionsPanel } from "@/components/app/workspace/sessions-panel";
+import { GraphPanel } from "@/components/app/workspace/graph-panel";
 import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare, Sparkles, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
   component: WorkspacePage,
 });
 
-const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory"] as const;
+const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory", "graph"] as const;
 
 function WorkspacePage() {
   const { workspaceId } = Route.useParams();
@@ -189,6 +190,9 @@ function WorkspacePage() {
         </TabsContent>
         <TabsContent value="memory" className="mt-6">
           <MemoryPanel workspaceId={workspaceId} />
+        </TabsContent>
+        <TabsContent value="graph" className="mt-6">
+          <GraphPanel workspaceId={workspaceId} />
         </TabsContent>
       </Tabs>
 
