@@ -34,11 +34,15 @@ export function GraphPanel({ workspaceId }: { workspaceId: string }) {
   const grouped = useMemo(() => {
     const map = new Map<string, GraphEntity[]>();
     for (const e of data?.entities ?? []) {
-      (map.get(e.type) ?? map.set(e.type, []).get(e.type)!).push(e);
+      const bucket = map.get(e.type) ?? [];
+      bucket.push(e);
+      map.set(e.type, bucket);
     }
-    return [...map.entries()].sort(
-      (a, b) => (TYPE_ORDER.indexOf(a[0]) + 99) % 99 - ((TYPE_ORDER.indexOf(b[0]) + 99) % 99),
-    );
+    const rank = (t: string) => {
+      const i = TYPE_ORDER.indexOf(t);
+      return i === -1 ? TYPE_ORDER.length : i;
+    };
+    return [...map.entries()].sort((a, b) => rank(a[0]) - rank(b[0]));
   }, [data]);
 
   const hasGraph = (data?.entities.length ?? 0) > 0;
