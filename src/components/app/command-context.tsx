@@ -63,7 +63,7 @@ function createRegistry() {
 
 export function CommandProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const registryRef = useRef<ReturnType<typeof createRegistry>>();
+  const registryRef = useRef<ReturnType<typeof createRegistry> | null>(null);
   if (!registryRef.current) registryRef.current = createRegistry();
   const registry = registryRef.current;
 
