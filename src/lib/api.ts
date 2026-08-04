@@ -71,11 +71,7 @@ export async function listWorkspaces(): Promise<Workspace[]> {
 }
 
 export async function getWorkspace(id: string): Promise<Workspace> {
-  const { data, error } = await supabase
-    .from("workspaces")
-    .select("*")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.from("workspaces").select("*").eq("id", id).single();
   if (error) throw error;
   return data;
 }
@@ -244,9 +240,7 @@ export async function createMemory(input: {
   category?: string | null;
 }) {
   const expires =
-    input.layer === "working"
-      ? new Date(Date.now() + 1000 * 60 * 60 * 12).toISOString()
-      : null;
+    input.layer === "working" ? new Date(Date.now() + 1000 * 60 * 60 * 12).toISOString() : null;
   const { data, error } = await supabase
     .from("memory_entries")
     .insert({

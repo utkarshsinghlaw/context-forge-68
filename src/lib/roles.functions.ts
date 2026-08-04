@@ -19,10 +19,7 @@ export const getMyRoles = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AppRole[]> => {
     const { supabase, userId } = context;
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId);
+    const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
     if (error) throw new Error(error.message);
     return (data ?? []).map((r) => r.role as AppRole);
   });

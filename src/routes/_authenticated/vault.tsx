@@ -22,8 +22,8 @@ function VaultPage() {
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-accent/40 p-4 text-sm text-muted-foreground">
-        The Vault holds your skills, templates, career history, frameworks and research —
-        the knowledge you carry into every project.
+        The Vault holds your skills, templates, career history, frameworks and research — the
+        knowledge you carry into every project.
       </div>
 
       <div className="mt-4">

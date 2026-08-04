@@ -14,17 +14,7 @@ import { listWorkspaces } from "@/lib/api";
 import { kindMeta } from "@/lib/workspace-meta";
 import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Home,
-  Vault,
-  Plus,
-  Moon,
-  Sun,
-  LogOut,
-  ArrowRight,
-  Search,
-  Settings,
-} from "lucide-react";
+import { Home, Vault, Plus, Moon, Sun, LogOut, ArrowRight, Search, Settings } from "lucide-react";
 
 export function CommandPalette() {
   const { open, setOpen, actions } = useCommand();
@@ -61,28 +51,41 @@ export function CommandPalette() {
               >
                 {a.icon ? <a.icon className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
                 <span>{a.label}</span>
-                {a.hint && (
-                  <span className="ml-auto text-xs text-muted-foreground">{a.hint}</span>
-                )}
+                {a.hint && <span className="ml-auto text-xs text-muted-foreground">{a.hint}</span>}
               </CommandItem>
             ))}
           </CommandGroup>
         ))}
 
         <CommandGroup heading="Navigate">
-          <CommandItem value="home workspaces overview" onSelect={() => go(() => navigate({ to: "/home" }))}>
+          <CommandItem
+            value="home workspaces overview"
+            onSelect={() => go(() => navigate({ to: "/home" }))}
+          >
             <Home className="h-4 w-4" /> All workspaces
           </CommandItem>
-          <CommandItem value="search everything global find" onSelect={() => go(() => navigate({ to: "/search" }))}>
+          <CommandItem
+            value="search everything global find"
+            onSelect={() => go(() => navigate({ to: "/search" }))}
+          >
             <Search className="h-4 w-4" /> Search everything
           </CommandItem>
-          <CommandItem value="knowledge vault" onSelect={() => go(() => navigate({ to: "/vault" }))}>
+          <CommandItem
+            value="knowledge vault"
+            onSelect={() => go(() => navigate({ to: "/vault" }))}
+          >
             <Vault className="h-4 w-4" /> Knowledge Vault
           </CommandItem>
-          <CommandItem value="settings profile account preferences" onSelect={() => go(() => navigate({ to: "/settings" }))}>
+          <CommandItem
+            value="settings profile account preferences"
+            onSelect={() => go(() => navigate({ to: "/settings" }))}
+          >
             <Settings className="h-4 w-4" /> Settings
           </CommandItem>
-          <CommandItem value="new create workspace" onSelect={() => go(() => navigate({ to: "/home", search: { new: true } }))}>
+          <CommandItem
+            value="new create workspace"
+            onSelect={() => go(() => navigate({ to: "/home", search: { new: true } }))}
+          >
             <Plus className="h-4 w-4" /> New workspace
           </CommandItem>
         </CommandGroup>

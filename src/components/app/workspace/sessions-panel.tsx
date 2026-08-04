@@ -12,7 +12,10 @@ export function SessionsPanel({ workspaceId }: { workspaceId: string }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const key = ["sessions", workspaceId];
-  const { data: sessions = [], isLoading } = useQuery({ queryKey: key, queryFn: () => listSessions(workspaceId) });
+  const { data: sessions = [], isLoading } = useQuery({
+    queryKey: key,
+    queryFn: () => listSessions(workspaceId),
+  });
 
   const start = useMutation({
     mutationFn: () => createSession(workspaceId),
@@ -30,14 +33,20 @@ export function SessionsPanel({ workspaceId }: { workspaceId: string }) {
           Capture live conversations and get grounded, speakable answers in real time.
         </p>
         <Button onClick={() => start.mutate()} disabled={start.isPending}>
-          {start.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          {start.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
           Start live session
         </Button>
       </div>
 
       {isLoading ? (
         <div className="mt-6 space-y-3">
-          {[0, 1].map((i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />)}
+          {[0, 1].map((i) => (
+            <div key={i} className="h-16 animate-pulse rounded-xl bg-muted" />
+          ))}
         </div>
       ) : sessions.length === 0 ? (
         <div className="mt-6">
@@ -45,7 +54,11 @@ export function SessionsPanel({ workspaceId }: { workspaceId: string }) {
             icon={Mic}
             title="No sessions yet"
             body="Start a live session before an interview or call. Interview Buddy listens, then drafts answers grounded in this workspace."
-            action={<Button onClick={() => start.mutate()}><Plus className="h-4 w-4" /> Start live session</Button>}
+            action={
+              <Button onClick={() => start.mutate()}>
+                <Plus className="h-4 w-4" /> Start live session
+              </Button>
+            }
           />
         </div>
       ) : (
@@ -67,9 +80,13 @@ export function SessionsPanel({ workspaceId }: { workspaceId: string }) {
                 </p>
               </div>
               {s.status === "ended" ? (
-                <Badge variant="secondary" className="gap-1"><CheckCircle2 className="h-3 w-3" /> Ended</Badge>
+                <Badge variant="secondary" className="gap-1">
+                  <CheckCircle2 className="h-3 w-3" /> Ended
+                </Badge>
               ) : (
-                <Badge className="gap-1 bg-destructive text-destructive-foreground"><Radio className="h-3 w-3 animate-pulse" /> Live</Badge>
+                <Badge className="gap-1 bg-destructive text-destructive-foreground">
+                  <Radio className="h-3 w-3 animate-pulse" /> Live
+                </Badge>
               )}
               <span
                 role="button"

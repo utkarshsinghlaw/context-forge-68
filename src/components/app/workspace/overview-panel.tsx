@@ -14,7 +14,10 @@ export function OverviewPanel({
   const notes = useQuery({ queryKey: ["notes", id], queryFn: () => listNotes(id) });
   const tasks = useQuery({ queryKey: ["tasks", id], queryFn: () => listTasks(id) });
   const docs = useQuery({ queryKey: ["documents", id], queryFn: () => listDocuments(id) });
-  const wsMem = useQuery({ queryKey: ["memory", "workspace", id], queryFn: () => listMemory({ layer: "workspace", workspaceId: id }) });
+  const wsMem = useQuery({
+    queryKey: ["memory", "workspace", id],
+    queryFn: () => listMemory({ layer: "workspace", workspaceId: id }),
+  });
 
   const openTasks = (tasks.data ?? []).filter((t) => !t.done);
 

@@ -1,17 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import {
-  listWorkspaces,
-  createWorkspace,
-  type WorkspaceKind,
-} from "@/lib/api";
-import {
-  WORKSPACE_KINDS,
-  WORKSPACE_COLOR_KEYS,
-  kindMeta,
-  colorMeta,
-} from "@/lib/workspace-meta";
+import { listWorkspaces, createWorkspace, type WorkspaceKind } from "@/lib/api";
+import { WORKSPACE_KINDS, WORKSPACE_COLOR_KEYS, kindMeta, colorMeta } from "@/lib/workspace-meta";
 import { useRegisterCommands } from "@/components/app/command-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,7 +89,13 @@ function HomePage() {
                 className="group flex flex-col rounded-2xl border border-border bg-card p-5 text-left shadow-soft transition-all hover:-translate-y-0.5 hover:shadow-pop"
               >
                 <div className="flex items-center justify-between">
-                  <span className={cn("grid h-11 w-11 place-items-center rounded-xl", color.soft, color.text)}>
+                  <span
+                    className={cn(
+                      "grid h-11 w-11 place-items-center rounded-xl",
+                      color.soft,
+                      color.text,
+                    )}
+                  >
                     <Icon className="h-5 w-5" />
                   </span>
                   <ArrowRight className="h-4 w-4 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
@@ -129,8 +126,8 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
     <div className="mt-10 rounded-2xl border border-dashed border-border bg-card/50 px-6 py-16 text-center">
       <h3 className="text-lg font-semibold">Create your first workspace</h3>
       <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-        Workspaces hold your notes, tasks, documents and memory. Try “Leeds MBA”,
-        “Bain Recruiting” or “Commercial Arbitration”.
+        Workspaces hold your notes, tasks, documents and memory. Try “Leeds MBA”, “Bain Recruiting”
+        or “Commercial Arbitration”.
       </p>
       <Button className="mt-6" onClick={onCreate}>
         <Plus className="h-4 w-4" /> New workspace
@@ -155,7 +152,13 @@ function NewWorkspaceDialog({
 
   const mutation = useMutation({
     mutationFn: () =>
-      createWorkspace({ name: name.trim(), kind, color, icon: "folder", description: description.trim() || null }),
+      createWorkspace({
+        name: name.trim(),
+        kind,
+        color,
+        icon: "folder",
+        description: description.trim() || null,
+      }),
     onSuccess: (w) => {
       qc.invalidateQueries({ queryKey: ["workspaces"] });
       toast.success("Workspace created");

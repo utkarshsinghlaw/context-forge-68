@@ -24,8 +24,13 @@ class GatewayError extends Error {
 }
 
 function friendlyError(status: number, body: string): GatewayError {
-  if (status === 402) return new GatewayError(402, "AI credits exhausted. Add credits to continue using AI features.");
-  if (status === 429) return new GatewayError(429, "AI is rate limited right now. Please try again in a moment.");
+  if (status === 402)
+    return new GatewayError(
+      402,
+      "AI credits exhausted. Add credits to continue using AI features.",
+    );
+  if (status === 429)
+    return new GatewayError(429, "AI is rate limited right now. Please try again in a moment.");
   if (status === 403) return new GatewayError(403, "AI is not enabled for this workspace.");
   return new GatewayError(status, `AI request failed (${status}): ${body.slice(0, 300)}`);
 }

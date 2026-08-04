@@ -6,7 +6,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Sparkles, RefreshCw, Loader2, StickyNote, FileText, Brain, CornerDownLeft, AlertCircle, MessageSquarePlus, User } from "lucide-react";
+import {
+  Sparkles,
+  RefreshCw,
+  Loader2,
+  StickyNote,
+  FileText,
+  Brain,
+  CornerDownLeft,
+  AlertCircle,
+  MessageSquarePlus,
+  User,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const sourceIcon: Record<string, typeof StickyNote> = {
@@ -53,7 +64,8 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
 
   const sync = useMutation({
     mutationFn: () => reindexFn({ data: { workspaceId } }),
-    onSuccess: (r) => toast.success(`Knowledge synced — ${r.indexed} chunks from ${r.sources} sources`),
+    onSuccess: (r) =>
+      toast.success(`Knowledge synced — ${r.indexed} chunks from ${r.sources} sources`),
     onError: (e: Error) => toast.error(e.message || "Sync failed"),
   });
 
@@ -150,7 +162,8 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
-          Ask questions grounded in this workspace — your notes, documents and memory. Indexing is automatic on every save; use Rebuild only if something looks out of date.
+          Ask questions grounded in this workspace — your notes, documents and memory. Indexing is
+          automatic on every save; use Rebuild only if something looks out of date.
         </p>
         <div className="flex shrink-0 items-center gap-2">
           {hasConversation && (
@@ -158,8 +171,17 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
               <MessageSquarePlus className="h-4 w-4" /> New chat
             </Button>
           )}
-          <Button variant="outline" size="sm" disabled={sync.isPending} onClick={() => sync.mutate()}>
-            {sync.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={sync.isPending}
+            onClick={() => sync.mutate()}
+          >
+            {sync.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
             Rebuild index
           </Button>
         </div>
@@ -184,14 +206,21 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
                 <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
                   <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                     <Sparkles className="h-3.5 w-3.5" /> Answer
-                    {streaming && i === turns.length - 1 && <Loader2 className="h-3 w-3 animate-spin" />}
+                    {streaming && i === turns.length - 1 && (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    )}
                   </div>
                   {t.error ? (
                     <div className="flex items-start gap-3 text-sm text-destructive">
                       <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                       <div className="space-y-2">
                         <p>{t.error}</p>
-                        <Button size="sm" variant="outline" onClick={retryLast} disabled={streaming}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={retryLast}
+                          disabled={streaming}
+                        >
                           <RefreshCw className="h-4 w-4" /> Try again
                         </Button>
                       </div>
@@ -212,20 +241,31 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
 
                 {t.citations && t.citations.length > 0 && (
                   <div>
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">Sources</p>
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      Sources
+                    </p>
                     <div className="grid gap-2">
                       {t.citations.map((c, ci) => {
                         const Icon = sourceIcon[c.source_type] ?? FileText;
                         return (
-                          <div key={`${c.source_id}-${ci}`} className="rounded-xl border border-border bg-card/60 p-3">
+                          <div
+                            key={`${c.source_id}-${ci}`}
+                            className="rounded-xl border border-border bg-card/60 p-3"
+                          >
                             <div className="flex items-center gap-2">
                               <span className="grid h-6 w-6 place-items-center rounded-md bg-accent text-accent-foreground">
                                 <Icon className="h-3.5 w-3.5" />
                               </span>
-                              <span className="text-sm font-medium">[{ci + 1}] {c.source_title || "Untitled"}</span>
-                              <span className="ml-auto text-xs capitalize text-muted-foreground">{c.source_type}</span>
+                              <span className="text-sm font-medium">
+                                [{ci + 1}] {c.source_title || "Untitled"}
+                              </span>
+                              <span className="ml-auto text-xs capitalize text-muted-foreground">
+                                {c.source_type}
+                              </span>
                             </div>
-                            <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">{c.snippet}</p>
+                            <p className="mt-2 line-clamp-2 text-xs text-muted-foreground">
+                              {c.snippet}
+                            </p>
                           </div>
                         );
                       })}
@@ -246,13 +286,21 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
             if ((e.metaKey || e.ctrlKey) && e.key === "Enter") submit();
           }}
           rows={3}
-          placeholder={hasConversation ? "Ask a follow-up…" : "What does the brief say about liability? Summarize the case strategy…"}
+          placeholder={
+            hasConversation
+              ? "Ask a follow-up…"
+              : "What does the brief say about liability? Summarize the case strategy…"
+          }
           className="resize-none border-0 bg-transparent p-0 shadow-none focus-visible:ring-0"
         />
         <div className="mt-3 flex items-center justify-between">
           <span className="text-xs text-muted-foreground">⌘/Ctrl + Enter to ask</span>
           <Button size="sm" disabled={!question.trim() || streaming} onClick={submit}>
-            {streaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {streaming ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
             {hasConversation ? "Send" : "Ask"}
           </Button>
         </div>
@@ -262,7 +310,9 @@ export function AskPanel({ workspaceId }: { workspaceId: string }) {
         <div className={cn("rounded-2xl border border-dashed border-border p-8 text-center")}>
           <CornerDownLeft className="mx-auto h-6 w-6 text-muted-foreground" />
           <p className="mt-3 text-sm text-muted-foreground">
-            Ask anything about this workspace — your notes, documents and memory are indexed automatically as you save them. Ask follow-ups and the assistant keeps the thread in context.
+            Ask anything about this workspace — your notes, documents and memory are indexed
+            automatically as you save them. Ask follow-ups and the assistant keeps the thread in
+            context.
           </p>
         </div>
       )}

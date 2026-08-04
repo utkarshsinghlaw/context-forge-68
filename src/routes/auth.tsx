@@ -89,8 +89,8 @@ function AuthPage() {
             The operating system for knowledge work.
           </h1>
           <p className="max-w-md text-base text-primary-foreground/80">
-            Workspace-first. Context before AI. Everything you know, organized into
-            working, workspace and vault memory.
+            Workspace-first. Context before AI. Everything you know, organized into working,
+            workspace and vault memory.
           </p>
         </div>
         <p className="text-sm text-primary-foreground/70">
@@ -117,12 +117,7 @@ function AuthPage() {
             </p>
           </div>
 
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={handleGoogle}
-            disabled={loading}
-          >
+          <Button variant="outline" className="w-full" onClick={handleGoogle} disabled={loading}>
             <GoogleIcon /> Continue with Google
           </Button>
 

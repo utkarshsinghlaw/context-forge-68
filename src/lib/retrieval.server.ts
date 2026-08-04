@@ -48,28 +48,38 @@ export async function hybridRetrieve(
     if (prev) {
       prev.score += inc;
       if (row.similarity > prev.row.similarity) prev.row = row;
-    }
-    else scores.set(id, { row, score: inc });
+    } else scores.set(id, { row, score: inc });
   };
 
   (vecMatches ?? []).forEach((m, i) =>
-    add(m.source_id, {
-      source_type: m.source_type,
-      source_id: m.source_id,
-      source_title: m.source_title,
-      snippet: m.content.slice(0, 280),
-      similarity: m.similarity ?? 0,
-    }, i),
+    add(
+      m.source_id,
+      {
+        source_type: m.source_type,
+        source_id: m.source_id,
+        source_title: m.source_title,
+        snippet: m.content.slice(0, 280),
+        similarity: m.similarity ?? 0,
+      },
+      i,
+    ),
   );
   (kwMatches ?? []).forEach((m, i) =>
-    add(m.source_id, {
-      source_type: m.source_type,
-      source_id: m.source_id,
-      source_title: m.source_title,
-      snippet: m.content.slice(0, 280),
-      similarity: 0,
-    }, i),
+    add(
+      m.source_id,
+      {
+        source_type: m.source_type,
+        source_id: m.source_id,
+        source_title: m.source_title,
+        snippet: m.content.slice(0, 280),
+        similarity: 0,
+      },
+      i,
+    ),
   );
 
-  return [...scores.values()].sort((a, b) => b.score - a.score).slice(0, limit).map((r) => r.row);
+  return [...scores.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map((r) => r.row);
 }

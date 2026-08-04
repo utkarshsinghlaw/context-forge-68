@@ -30,7 +30,15 @@ import { MemoryPanel } from "@/components/app/workspace/memory-panel";
 import { AskPanel } from "@/components/app/workspace/ask-panel";
 import { SessionsPanel } from "@/components/app/workspace/sessions-panel";
 import { GraphPanel } from "@/components/app/workspace/graph-panel";
-import { MoreHorizontal, Trash2, Loader2, StickyNote, CheckSquare, Sparkles, Mic } from "lucide-react";
+import {
+  MoreHorizontal,
+  Trash2,
+  Loader2,
+  StickyNote,
+  CheckSquare,
+  Sparkles,
+  Mic,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -53,7 +61,11 @@ function WorkspacePage() {
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const { data: workspace, isLoading, isError } = useQuery({
+  const {
+    data: workspace,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["workspace", workspaceId],
     queryFn: () => getWorkspace(workspaceId),
   });
@@ -137,7 +149,9 @@ function WorkspacePage() {
     <div className="mx-auto max-w-5xl px-6 py-8">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className={cn("grid h-12 w-12 place-items-center rounded-2xl", color.soft, color.text)}>
+          <span
+            className={cn("grid h-12 w-12 place-items-center rounded-2xl", color.soft, color.text)}
+          >
             <Icon className="h-6 w-6" />
           </span>
           <div>
@@ -201,8 +215,8 @@ function WorkspacePage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this workspace?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes “{workspace.name}” and all its notes, tasks,
-              documents and memory. This cannot be undone.
+              This permanently removes “{workspace.name}” and all its notes, tasks, documents and
+              memory. This cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

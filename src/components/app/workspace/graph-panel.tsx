@@ -59,7 +59,11 @@ export function GraphPanel({ workspaceId }: { workspaceId: string }) {
         body="Extract people, organizations and concepts from your indexed notes, documents and memory — plus how they relate."
         action={
           <Button onClick={() => extract.mutate()} disabled={extract.isPending}>
-            {extract.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Network className="h-4 w-4" />}
+            {extract.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Network className="h-4 w-4" />
+            )}
             Extract knowledge graph
           </Button>
         }
@@ -73,8 +77,17 @@ export function GraphPanel({ workspaceId }: { workspaceId: string }) {
         <p className="text-sm text-muted-foreground">
           {data!.entities.length} entities · {data!.edges.length} relationships
         </p>
-        <Button variant="outline" size="sm" onClick={() => extract.mutate()} disabled={extract.isPending}>
-          {extract.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => extract.mutate()}
+          disabled={extract.isPending}
+        >
+          {extract.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
           Re-extract
         </Button>
       </div>
@@ -85,14 +98,18 @@ export function GraphPanel({ workspaceId }: { workspaceId: string }) {
           <div className="mt-3 space-y-4">
             {grouped.map(([type, items]) => (
               <div key={type}>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{type}</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {type}
+                </p>
                 <div className="mt-2 space-y-2">
                   {items.map((e) => (
                     <div key={e.id} className="rounded-lg border border-border/60 px-3 py-2">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium">{e.name}</span>
                         {e.mentions > 1 && (
-                          <Badge variant="secondary" className="text-[10px]">×{e.mentions}</Badge>
+                          <Badge variant="secondary" className="text-[10px]">
+                            ×{e.mentions}
+                          </Badge>
                         )}
                       </div>
                       {e.description && (

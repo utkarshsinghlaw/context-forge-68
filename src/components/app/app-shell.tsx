@@ -130,7 +130,8 @@ function UserMenu() {
   const { user } = useAuth();
   const { theme, toggle } = useTheme();
   const navigate = useNavigate();
-  const name = (user?.user_metadata?.display_name as string) || user?.email?.split("@")[0] || "Account";
+  const name =
+    (user?.user_metadata?.display_name as string) || user?.email?.split("@")[0] || "Account";
   const initial = name.charAt(0).toUpperCase();
 
   return (
