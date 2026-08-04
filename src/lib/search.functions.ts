@@ -45,7 +45,8 @@ export const globalSearch = createServerFn({ method: "POST" })
 
     const wsName = new Map<string, string>();
     for (const w of workspaces ?? []) wsName.set(w.id, w.name);
-    const nameFor = (id: string | null) => (id ? wsName.get(id) ?? "Workspace" : "Knowledge Vault");
+    const nameFor = (id: string | null) =>
+      id ? (wsName.get(id) ?? "Workspace") : "Knowledge Vault";
 
     type Row = Omit<GlobalSearchResult, "workspace_name">;
     const scores = new Map<string, { row: Row; score: number }>();
@@ -57,24 +58,32 @@ export const globalSearch = createServerFn({ method: "POST" })
     };
 
     (vecMatches ?? []).forEach((m, i) =>
-      add(m.id, {
-        source_type: m.source_type,
-        source_id: m.source_id,
-        source_title: m.source_title,
-        snippet: m.content.slice(0, 240),
-        similarity: m.similarity ?? 0,
-        workspace_id: m.workspace_id,
-      }, i),
+      add(
+        m.id,
+        {
+          source_type: m.source_type,
+          source_id: m.source_id,
+          source_title: m.source_title,
+          snippet: m.content.slice(0, 240),
+          similarity: m.similarity ?? 0,
+          workspace_id: m.workspace_id,
+        },
+        i,
+      ),
     );
     (kwMatches ?? []).forEach((m, i) =>
-      add(m.id, {
-        source_type: m.source_type,
-        source_id: m.source_id,
-        source_title: m.source_title,
-        snippet: m.content.slice(0, 240),
-        similarity: 0,
-        workspace_id: m.workspace_id,
-      }, i),
+      add(
+        m.id,
+        {
+          source_type: m.source_type,
+          source_id: m.source_id,
+          source_title: m.source_title,
+          snippet: m.content.slice(0, 240),
+          similarity: 0,
+          workspace_id: m.workspace_id,
+        },
+        i,
+      ),
     );
 
     return [...scores.values()]

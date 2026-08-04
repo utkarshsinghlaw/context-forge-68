@@ -25,7 +25,10 @@ const PRIORITY_STYLE: Record<TaskPriority, string> = {
 export function TasksPanel({ workspaceId }: { workspaceId: string }) {
   const qc = useQueryClient();
   const key = ["tasks", workspaceId];
-  const { data: tasks = [], isLoading } = useQuery({ queryKey: key, queryFn: () => listTasks(workspaceId) });
+  const { data: tasks = [], isLoading } = useQuery({
+    queryKey: key,
+    queryFn: () => listTasks(workspaceId),
+  });
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<TaskPriority>("medium");
   const invalidate = () => qc.invalidateQueries({ queryKey: key });
@@ -51,11 +54,7 @@ export function TasksPanel({ workspaceId }: { workspaceId: string }) {
         }}
         className="flex gap-2"
       >
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Add a task…"
-        />
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Add a task…" />
         <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
           <SelectTrigger className="w-32">
             <SelectValue />
@@ -67,7 +66,11 @@ export function TasksPanel({ workspaceId }: { workspaceId: string }) {
           </SelectContent>
         </Select>
         <Button type="submit" disabled={!title.trim() || add.isPending}>
-          {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          {add.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
         </Button>
       </form>
 
@@ -132,7 +135,12 @@ function TaskList({
                 {format(new Date(t.due_date), "MMM d")}
               </span>
             )}
-            <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium capitalize", PRIORITY_STYLE[t.priority])}>
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10px] font-medium capitalize",
+                PRIORITY_STYLE[t.priority],
+              )}
+            >
               {t.priority}
             </span>
             <button

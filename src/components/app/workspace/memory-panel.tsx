@@ -6,9 +6,9 @@ export function MemoryPanel({ workspaceId }: { workspaceId: string }) {
   return (
     <div className="space-y-4">
       <div className="rounded-2xl border border-border bg-accent/40 p-4 text-sm text-muted-foreground">
-        Interview Buddy uses three layers of memory. Working memory is for the current
-        session and auto-expires; workspace memory persists with this workspace; the
-        Vault is permanent knowledge shared across every workspace.
+        Interview Buddy uses three layers of memory. Working memory is for the current session and
+        auto-expires; workspace memory persists with this workspace; the Vault is permanent
+        knowledge shared across every workspace.
       </div>
 
       <MemorySection

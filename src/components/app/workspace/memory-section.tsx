@@ -45,7 +45,13 @@ export function MemorySection({
 
   const add = useMutation({
     mutationFn: () =>
-      createMemory({ layer, workspaceId, title: title2.trim(), category: category.trim() || null, content }),
+      createMemory({
+        layer,
+        workspaceId,
+        title: title2.trim(),
+        category: category.trim() || null,
+        content,
+      }),
     onSuccess: () => {
       toast.success("Saved to memory");
       qc.invalidateQueries({ queryKey: key });
@@ -61,7 +67,12 @@ export function MemorySection({
     <section className="rounded-2xl border border-border bg-card p-5 shadow-soft">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", accentClass ?? "bg-accent text-accent-foreground")}>
+          <span
+            className={cn(
+              "grid h-10 w-10 shrink-0 place-items-center rounded-xl",
+              accentClass ?? "bg-accent text-accent-foreground",
+            )}
+          >
             <Icon className="h-5 w-5" />
           </span>
           <div>
@@ -88,7 +99,10 @@ export function MemorySection({
         ) : (
           <div className="space-y-2">
             {entries.map((m) => (
-              <div key={m.id} className="group flex items-start gap-3 rounded-lg border border-border bg-background px-3 py-2.5">
+              <div
+                key={m.id}
+                className="group flex items-start gap-3 rounded-lg border border-border bg-background px-3 py-2.5"
+              >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="truncate text-sm font-medium">{m.title}</span>
@@ -98,7 +112,9 @@ export function MemorySection({
                       </span>
                     )}
                   </div>
-                  {m.content && <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{m.content}</p>}
+                  {m.content && (
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{m.content}</p>
+                  )}
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     {m.expires_at
                       ? `Expires ${formatDistanceToNow(new Date(m.expires_at), { addSuffix: true })}`
@@ -129,19 +145,38 @@ export function MemorySection({
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="mem-title">Title</Label>
-              <Input id="mem-title" autoFocus value={title2} onChange={(e) => setTitle2(e.target.value)} placeholder="e.g. Preferred case framework" />
+              <Input
+                id="mem-title"
+                autoFocus
+                value={title2}
+                onChange={(e) => setTitle2(e.target.value)}
+                placeholder="e.g. Preferred case framework"
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="mem-cat">Category (optional)</Label>
-              <Input id="mem-cat" value={category} onChange={(e) => setCategory(e.target.value)} placeholder="skill · template · fact" />
+              <Input
+                id="mem-cat"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="skill · template · fact"
+              />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="mem-content">Details</Label>
-              <Textarea id="mem-content" value={content} onChange={(e) => setContent(e.target.value)} rows={4} placeholder="What should be remembered?" />
+              <Textarea
+                id="mem-content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={4}
+                placeholder="What should be remembered?"
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="ghost" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button disabled={!title2.trim() || add.isPending} onClick={() => add.mutate()}>
               {add.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Save
             </Button>

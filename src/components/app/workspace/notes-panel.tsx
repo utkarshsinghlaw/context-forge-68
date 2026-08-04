@@ -13,7 +13,10 @@ import { PanelEmpty } from "./panel-empty";
 export function NotesPanel({ workspaceId }: { workspaceId: string }) {
   const qc = useQueryClient();
   const key = ["notes", workspaceId];
-  const { data: notes = [], isLoading } = useQuery({ queryKey: key, queryFn: () => listNotes(workspaceId) });
+  const { data: notes = [], isLoading } = useQuery({
+    queryKey: key,
+    queryFn: () => listNotes(workspaceId),
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const create = useMutation({
@@ -29,8 +32,17 @@ export function NotesPanel({ workspaceId }: { workspaceId: string }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
       <div className="space-y-2">
-        <Button className="w-full" variant="outline" onClick={() => create.mutate()} disabled={create.isPending}>
-          {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+        <Button
+          className="w-full"
+          variant="outline"
+          onClick={() => create.mutate()}
+          disabled={create.isPending}
+        >
+          {create.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="h-4 w-4" />
+          )}
           New note
         </Button>
         {isLoading ? (
@@ -45,7 +57,9 @@ export function NotesPanel({ workspaceId }: { workspaceId: string }) {
                 onClick={() => setSelectedId(n.id)}
                 className={cn(
                   "w-full rounded-lg border px-3 py-2 text-left transition-colors",
-                  selected?.id === n.id ? "border-primary bg-accent" : "border-transparent hover:bg-muted",
+                  selected?.id === n.id
+                    ? "border-primary bg-accent"
+                    : "border-transparent hover:bg-muted",
                 )}
               >
                 <div className="flex items-center gap-1.5">
@@ -62,20 +76,40 @@ export function NotesPanel({ workspaceId }: { workspaceId: string }) {
       </div>
 
       {selected ? (
-        <NoteEditor key={selected.id} note={selected} onChanged={() => qc.invalidateQueries({ queryKey: key })} onDeleted={() => { setSelectedId(null); qc.invalidateQueries({ queryKey: key }); }} />
+        <NoteEditor
+          key={selected.id}
+          note={selected}
+          onChanged={() => qc.invalidateQueries({ queryKey: key })}
+          onDeleted={() => {
+            setSelectedId(null);
+            qc.invalidateQueries({ queryKey: key });
+          }}
+        />
       ) : (
         <PanelEmpty
           icon={StickyNote}
           title="Capture your thinking"
           body="Notes are private to this workspace and feed your workspace memory."
-          action={<Button onClick={() => create.mutate()}><Plus className="h-4 w-4" /> New note</Button>}
+          action={
+            <Button onClick={() => create.mutate()}>
+              <Plus className="h-4 w-4" /> New note
+            </Button>
+          }
         />
       )}
     </div>
   );
 }
 
-function NoteEditor({ note, onChanged, onDeleted }: { note: Note; onChanged: () => void; onDeleted: () => void }) {
+function NoteEditor({
+  note,
+  onChanged,
+  onDeleted,
+}: {
+  note: Note;
+  onChanged: () => void;
+  onDeleted: () => void;
+}) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [saving, setSaving] = useState(false);

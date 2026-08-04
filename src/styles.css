@@ -157,8 +157,8 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family:
-      -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-      "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto,
+      Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     font-feature-settings: "cv11", "ss01";

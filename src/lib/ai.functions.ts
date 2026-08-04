@@ -27,18 +27,46 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
       supabase.from("notes").select("id,title,content").eq("workspace_id", workspaceId),
       supabase.from("documents").select("id,title,content").eq("workspace_id", workspaceId),
       supabase.from("memory_entries").select("id,title,content").eq("workspace_id", workspaceId),
-      supabase.from("memory_entries").select("id,title,content").eq("layer", "vault").is("workspace_id", null),
+      supabase
+        .from("memory_entries")
+        .select("id,title,content")
+        .eq("layer", "vault")
+        .is("workspace_id", null),
     ]);
 
     const sources: SourceRow[] = [];
     for (const n of notes.data ?? [])
-      sources.push({ source_type: "note", source_id: n.id, source_title: n.title, workspace_id: workspaceId, text: `${n.title}\n\n${n.content ?? ""}` });
+      sources.push({
+        source_type: "note",
+        source_id: n.id,
+        source_title: n.title,
+        workspace_id: workspaceId,
+        text: `${n.title}\n\n${n.content ?? ""}`,
+      });
     for (const d of docs.data ?? [])
-      sources.push({ source_type: "document", source_id: d.id, source_title: d.title, workspace_id: workspaceId, text: `${d.title}\n\n${d.content ?? ""}` });
+      sources.push({
+        source_type: "document",
+        source_id: d.id,
+        source_title: d.title,
+        workspace_id: workspaceId,
+        text: `${d.title}\n\n${d.content ?? ""}`,
+      });
     for (const m of wsMem.data ?? [])
-      sources.push({ source_type: "memory", source_id: m.id, source_title: m.title, workspace_id: workspaceId, text: `${m.title}\n\n${m.content ?? ""}` });
+      sources.push({
+        source_type: "memory",
+        source_id: m.id,
+        source_title: m.title,
+        workspace_id: workspaceId,
+        text: `${m.title}\n\n${m.content ?? ""}`,
+      });
     for (const m of vaultMem.data ?? [])
-      sources.push({ source_type: "memory", source_id: m.id, source_title: m.title, workspace_id: null, text: `${m.title}\n\n${m.content ?? ""}` });
+      sources.push({
+        source_type: "memory",
+        source_id: m.id,
+        source_title: m.title,
+        workspace_id: null,
+        text: `${m.title}\n\n${m.content ?? ""}`,
+      });
 
     // Build chunk records.
     const pending: { meta: SourceRow; chunk_index: number; content: string }[] = [];
@@ -48,7 +76,11 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
     }
 
     // Clear existing workspace + vault chunks for this user, then reinsert.
-    await supabase.from("chunks").delete().eq("user_id", userId).or(`workspace_id.eq.${workspaceId},workspace_id.is.null`);
+    await supabase
+      .from("chunks")
+      .delete()
+      .eq("user_id", userId)
+      .or(`workspace_id.eq.${workspaceId},workspace_id.is.null`);
 
     if (pending.length === 0) return { indexed: 0, sources: sources.length };
 
@@ -201,26 +233,33 @@ export const askWorkspace = createServerFn({ method: "POST" })
       if (prev) {
         prev.score += inc;
         if (row.similarity > prev.row.similarity) prev.row = row;
-      }
-      else scores.set(id, { row, score: inc });
+      } else scores.set(id, { row, score: inc });
     };
     (vecMatches ?? []).forEach((m, i) =>
-      add(m.source_id, {
-        source_type: m.source_type,
-        source_id: m.source_id,
-        source_title: m.source_title,
-        snippet: m.content.slice(0, 280),
-        similarity: m.similarity ?? 0,
-      }, i),
+      add(
+        m.source_id,
+        {
+          source_type: m.source_type,
+          source_id: m.source_id,
+          source_title: m.source_title,
+          snippet: m.content.slice(0, 280),
+          similarity: m.similarity ?? 0,
+        },
+        i,
+      ),
     );
     (kwMatches ?? []).forEach((m, i) =>
-      add(m.source_id, {
-        source_type: m.source_type,
-        source_id: m.source_id,
-        source_title: m.source_title,
-        snippet: m.content.slice(0, 280),
-        similarity: 0,
-      }, i),
+      add(
+        m.source_id,
+        {
+          source_type: m.source_type,
+          source_id: m.source_id,
+          source_title: m.source_title,
+          snippet: m.content.slice(0, 280),
+          similarity: 0,
+        },
+        i,
+      ),
     );
 
     const ranked = [...scores.values()].sort((a, b) => b.score - a.score).slice(0, 6);

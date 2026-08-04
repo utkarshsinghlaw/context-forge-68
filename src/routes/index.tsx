@@ -99,13 +99,12 @@ function Landing() {
             Context before AI — not another chatbot
           </div>
           <h1 className="mx-auto max-w-3xl text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
-            The operating system for{" "}
-            <span className="text-gradient-brand">knowledge work</span>.
+            The operating system for <span className="text-gradient-brand">knowledge work</span>.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg text-muted-foreground">
-            Organize your professional life into focused workspaces with three layers
-            of memory. Real-time assistance for meetings, interviews, coursework and
-            cases — all in one fast, private app.
+            Organize your professional life into focused workspaces with three layers of memory.
+            Real-time assistance for meetings, interviews, coursework and cases — all in one fast,
+            private app.
           </p>
           <div className="mt-9 flex items-center justify-center gap-3">
             <Button size="lg" asChild>

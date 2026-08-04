@@ -104,7 +104,9 @@ function SettingsPage() {
       <section className="mt-4 rounded-2xl border border-border bg-card p-5 shadow-soft">
         <h2 className="font-semibold">Account</h2>
         <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Sign out of Interview Buddy on this device.</p>
+          <p className="text-sm text-muted-foreground">
+            Sign out of Interview Buddy on this device.
+          </p>
           <Button
             variant="outline"
             onClick={async () => {

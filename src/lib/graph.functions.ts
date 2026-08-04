@@ -145,7 +145,10 @@ export const extractWorkspaceGraph = createServerFn({ method: "POST" })
     const parsed = ExtractionSchema.parse(firstJsonObject(raw));
 
     // Deduplicate entities case-insensitively, counting mentions.
-    const entityMap = new Map<string, { name: string; type: string; description: string; mentions: number }>();
+    const entityMap = new Map<
+      string,
+      { name: string; type: string; description: string; mentions: number }
+    >();
     for (const e of parsed.entities.slice(0, 60)) {
       const key = e.name.trim().toLowerCase();
       if (!key) continue;
@@ -165,8 +168,16 @@ export const extractWorkspaceGraph = createServerFn({ method: "POST" })
     if (entityMap.size === 0) return { entities: 0, edges: 0, empty: false as const };
 
     // Replace the previous graph (edges cascade with entities).
-    await supabase.from("graph_edges").delete().eq("workspace_id", workspaceId).eq("user_id", userId);
-    await supabase.from("graph_entities").delete().eq("workspace_id", workspaceId).eq("user_id", userId);
+    await supabase
+      .from("graph_edges")
+      .delete()
+      .eq("workspace_id", workspaceId)
+      .eq("user_id", userId);
+    await supabase
+      .from("graph_entities")
+      .delete()
+      .eq("workspace_id", workspaceId)
+      .eq("user_id", userId);
 
     const { data: inserted, error: insErr } = await supabase
       .from("graph_entities")

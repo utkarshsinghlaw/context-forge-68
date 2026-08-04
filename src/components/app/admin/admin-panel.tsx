@@ -51,7 +51,11 @@ function ClaimAdmin({ onClaimed }: { onClaimed: () => void }) {
         You don't have the admin role. If no admin has been set up yet, you can claim it now.
       </p>
       <Button className="mt-5" onClick={() => claim.mutate()} disabled={claim.isPending}>
-        {claim.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Crown className="h-4 w-4" />}
+        {claim.isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Crown className="h-4 w-4" />
+        )}
         Claim admin role
       </Button>
     </div>
@@ -107,7 +111,9 @@ function UserRow({ row }: { row: AdminUserRow }) {
               }
               className={cn(
                 "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-all disabled:opacity-50",
-                has ? roleBadge[role] : "border-dashed border-border text-muted-foreground/60 hover:text-foreground hover:border-foreground/30",
+                has
+                  ? roleBadge[role]
+                  : "border-dashed border-border text-muted-foreground/60 hover:text-foreground hover:border-foreground/30",
               )}
             >
               <Icon className="h-3 w-3" />

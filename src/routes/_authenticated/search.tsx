@@ -5,7 +5,15 @@ import { useMutation } from "@tanstack/react-query";
 import { globalSearch, type GlobalSearchResult } from "@/lib/search.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Loader2, StickyNote, FileText, Brain, ArrowRight, AlertCircle } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  StickyNote,
+  FileText,
+  Brain,
+  ArrowRight,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/search")({
@@ -97,7 +105,11 @@ function SearchPage() {
           className="h-11"
         />
         <Button type="submit" className="h-11" disabled={!query.trim() || search.isPending}>
-          {search.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+          {search.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Search className="h-4 w-4" />
+          )}
           Search
         </Button>
       </form>
@@ -118,7 +130,8 @@ function SearchPage() {
 
         {search.isSuccess && results.length === 0 && (
           <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-            No matches found. Try different words — search understands meaning, not just exact terms.
+            No matches found. Try different words — search understands meaning, not just exact
+            terms.
           </div>
         )}
 
@@ -140,7 +153,9 @@ function SearchPage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium">{r.source_title || "Untitled"}</span>
+                      <span className="truncate text-sm font-medium">
+                        {r.source_title || "Untitled"}
+                      </span>
                       <span className="ml-auto shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                         {r.workspace_name}
                       </span>

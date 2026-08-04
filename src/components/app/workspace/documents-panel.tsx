@@ -17,18 +17,17 @@ import { toast } from "sonner";
 import { FileText, Plus, Trash2, Loader2, UploadCloud } from "lucide-react";
 import { format } from "date-fns";
 import { PanelEmpty } from "./panel-empty";
-import {
-  ACCEPTED_EXTENSIONS,
-  isAcceptedFile,
-  parseFile,
-} from "@/lib/ingest";
+import { ACCEPTED_EXTENSIONS, isAcceptedFile, parseFile } from "@/lib/ingest";
 
 const ACCEPT_ATTR = ACCEPTED_EXTENSIONS.join(",");
 
 export function DocumentsPanel({ workspaceId }: { workspaceId: string }) {
   const qc = useQueryClient();
   const key = ["documents", workspaceId];
-  const { data: docs = [], isLoading } = useQuery({ queryKey: key, queryFn: () => listDocuments(workspaceId) });
+  const { data: docs = [], isLoading } = useQuery({
+    queryKey: key,
+    queryFn: () => listDocuments(workspaceId),
+  });
   const [open, setOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -75,7 +74,11 @@ export function DocumentsPanel({ workspaceId }: { workspaceId: string }) {
             <Plus className="h-4 w-4" /> Paste text
           </Button>
           <Button variant="outline" disabled={uploading} onClick={() => inputRef.current?.click()}>
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+            {uploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <UploadCloud className="h-4 w-4" />
+            )}
             Upload files
           </Button>
         </div>
@@ -135,13 +138,20 @@ export function DocumentsPanel({ workspaceId }: { workspaceId: string }) {
             icon={FileText}
             title="No documents yet"
             body="Upload PDFs, briefs and articles, or paste text directly. They become searchable context for this workspace."
-            action={<Button onClick={() => setOpen(true)}><Plus className="h-4 w-4" /> Paste text</Button>}
+            action={
+              <Button onClick={() => setOpen(true)}>
+                <Plus className="h-4 w-4" /> Paste text
+              </Button>
+            }
           />
         </div>
       ) : (
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           {docs.map((d) => (
-            <div key={d.id} className="group rounded-xl border border-border bg-card p-4 shadow-soft">
+            <div
+              key={d.id}
+              className="group rounded-xl border border-border bg-card p-4 shadow-soft"
+            >
               <div className="flex items-start justify-between">
                 <span className="grid h-9 w-9 place-items-center rounded-lg bg-accent text-accent-foreground">
                   <FileText className="h-4 w-4" />
@@ -209,20 +219,36 @@ function AddDocDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Add document</DialogTitle>
-          <DialogDescription>Paste content to make it searchable in this workspace.</DialogDescription>
+          <DialogDescription>
+            Paste content to make it searchable in this workspace.
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="doc-title">Title</Label>
-            <Input id="doc-title" autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Case brief — Smith v. Jones" />
+            <Input
+              id="doc-title"
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Case brief — Smith v. Jones"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="doc-content">Content</Label>
-            <Textarea id="doc-content" value={content} onChange={(e) => setContent(e.target.value)} rows={8} placeholder="Paste text here…" />
+            <Textarea
+              id="doc-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={8}
+              placeholder="Paste text here…"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
           <Button disabled={!title.trim() || add.isPending} onClick={() => add.mutate()}>
             {add.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Add document
           </Button>
