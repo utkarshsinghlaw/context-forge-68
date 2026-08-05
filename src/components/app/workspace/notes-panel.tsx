@@ -1,14 +1,29 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { listNotes, createNote, updateNote, deleteNote, type Note } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichNoteEditor } from "@/components/ui/editor/editor";
 import { toast } from "sonner";
 import { Plus, Pin, PinOff, Trash2, Loader2, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { PanelEmpty } from "./panel-empty";
+
+function stripHtml(html: string): string {
+  if (!html) return "";
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n+/g, " ")
+    .trim();
+}
 
 export function NotesPanel({ workspaceId }: { workspaceId: string }) {
   const qc = useQueryClient();
@@ -67,7 +82,7 @@ export function NotesPanel({ workspaceId }: { workspaceId: string }) {
                   <span className="truncate text-sm font-medium">{n.title || "Untitled"}</span>
                 </div>
                 <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                  {n.content?.slice(0, 60) || "Empty note"}
+                  {stripHtml(n.content ?? "").slice(0, 60) || "Empty note"}
                 </p>
               </button>
             ))}
@@ -113,16 +128,37 @@ function NoteEditor({
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content);
   const [saving, setSaving] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const qc = useQueryClient();
 
   const save = async () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
     setSaving(true);
     try {
-      await updateNote(note.id, { title: title.trim() || "Untitled", content });
+      await updateNote(note.id, {
+        title: title.trim() || "Untitled",
+        content,
+      });
       onChanged();
+      qc.invalidateQueries({ queryKey: ["notes", note.workspace_id] });
     } finally {
       setSaving(false);
     }
   };
+
+  const scheduleSave = () => {
+    setSaving(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      void save();
+    }, 800);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const togglePin = async () => {
     await updateNote(note.id, { pinned: !note.pinned });
@@ -140,7 +176,10 @@ function NoteEditor({
       <div className="flex items-center gap-2">
         <Input
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            scheduleSave();
+          }}
           onBlur={save}
           className="border-0 px-0 text-lg font-semibold shadow-none focus-visible:ring-0"
           placeholder="Untitled"
@@ -152,13 +191,15 @@ function NoteEditor({
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </div>
-      <Textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        onBlur={save}
-        placeholder="Start writing…"
-        className="mt-2 min-h-[320px] resize-none border-0 px-0 shadow-none focus-visible:ring-0"
-      />
+      <div className="mt-2 min-h-[320px]">
+        <RichNoteEditor
+          initialContent={content}
+          onChange={(html) => {
+            setContent(html);
+            scheduleSave();
+          }}
+        />
+      </div>
       <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
         {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
         Edited {formatDistanceToNow(new Date(note.updated_at), { addSuffix: true })}
