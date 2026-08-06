@@ -30,6 +30,7 @@ import { MemoryPanel } from "@/components/app/workspace/memory-panel";
 import { AskPanel } from "@/components/app/workspace/ask-panel";
 import { SessionsPanel } from "@/components/app/workspace/sessions-panel";
 import { GraphPanel } from "@/components/app/workspace/graph-panel";
+import { ReviewPanel } from "@/components/app/workspace/review-panel";
 import {
   MoreHorizontal,
   Trash2,
@@ -38,6 +39,7 @@ import {
   CheckSquare,
   Sparkles,
   Mic,
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -49,7 +51,7 @@ export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
   component: WorkspacePage,
 });
 
-const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory", "graph"] as const;
+const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory", "graph", "review"] as const;
 
 function WorkspacePage() {
   const { workspaceId } = Route.useParams();
@@ -116,6 +118,13 @@ function WorkspacePage() {
           qc.invalidateQueries({ queryKey: ["sessions", workspaceId] });
           navigate({ to: "/session/$sessionId", params: { sessionId: s.id } });
         },
+      },
+      {
+        id: "ws-go-review",
+        label: "Open spaced repetition review",
+        group: "This workspace",
+        icon: Brain,
+        run: () => setTab("review"),
       },
     ],
     [workspaceId],
@@ -207,6 +216,9 @@ function WorkspacePage() {
         </TabsContent>
         <TabsContent value="graph" className="mt-6">
           <GraphPanel workspaceId={workspaceId} />
+        </TabsContent>
+        <TabsContent value="review" className="mt-6">
+          <ReviewPanel workspaceId={workspaceId} />
         </TabsContent>
       </Tabs>
 

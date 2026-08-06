@@ -308,6 +308,112 @@ export type Database = {
         }
         Relationships: []
       }
+      review_cards: {
+        Row: {
+          back: string
+          created_at: string
+          due_date: string | null
+          ease_factor: number
+          front: string
+          id: string
+          interval_days: number
+          lapses: number
+          repetitions: number
+          source_id: string
+          source_type: string
+          status: string
+          updated_at: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          back: string
+          created_at?: string
+          due_date?: string | null
+          ease_factor?: number
+          front: string
+          id?: string
+          interval_days?: number
+          lapses?: number
+          repetitions?: number
+          source_id: string
+          source_type: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          back?: string
+          created_at?: string
+          due_date?: string | null
+          ease_factor?: number
+          front?: string
+          id?: string
+          interval_days?: number
+          lapses?: number
+          repetitions?: number
+          source_id?: string
+          source_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_cards_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_logs: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          new_ease_factor: number | null
+          new_interval: number | null
+          old_ease_factor: number | null
+          old_interval: number | null
+          rating: Database["public"]["Enums"]["review_rating"]
+          user_id: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          new_ease_factor?: number | null
+          new_interval?: number | null
+          old_ease_factor?: number | null
+          old_interval?: number | null
+          rating: Database["public"]["Enums"]["review_rating"]
+          user_id: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          new_ease_factor?: number | null
+          new_interval?: number | null
+          old_ease_factor?: number | null
+          old_interval?: number | null
+          rating?: Database["public"]["Enums"]["review_rating"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_logs_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "review_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_turns: {
         Row: {
           citations: Json | null
@@ -538,6 +644,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "moderator" | "user"
       memory_layer: "working" | "workspace" | "vault"
+      review_rating: "again" | "hard" | "good" | "easy"
       session_status: "live" | "ended"
       task_priority: "low" | "medium" | "high"
       turn_role: "speaker" | "assistant" | "note"
@@ -677,6 +784,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "moderator", "user"],
       memory_layer: ["working", "workspace", "vault"],
+      review_rating: ["again", "hard", "good", "easy"],
       session_status: ["live", "ended"],
       task_priority: ["low", "medium", "high"],
       turn_role: ["speaker", "assistant", "note"],
