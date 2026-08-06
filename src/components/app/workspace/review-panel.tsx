@@ -15,7 +15,7 @@ import {
   type ReviewCard,
   type ReviewRating,
 } from "@/lib/review.functions";
-import { Brain, Loader2, Sparkles, Trash2, RotateCcw, Layers, BookOpen } from "lucide-react";
+import { Brain, Loader2, Sparkles, Trash2, RotateCcw, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
