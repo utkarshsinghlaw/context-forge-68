@@ -217,6 +217,9 @@ function WorkspacePage() {
         <TabsContent value="graph" className="mt-6">
           <GraphPanel workspaceId={workspaceId} />
         </TabsContent>
+        <TabsContent value="review" className="mt-6">
+          <ReviewPanel workspaceId={workspaceId} />
+        </TabsContent>
       </Tabs>
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
