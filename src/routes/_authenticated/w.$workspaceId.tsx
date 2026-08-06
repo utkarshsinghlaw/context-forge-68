@@ -119,6 +119,13 @@ function WorkspacePage() {
           navigate({ to: "/session/$sessionId", params: { sessionId: s.id } });
         },
       },
+      {
+        id: "ws-go-review",
+        label: "Open spaced repetition review",
+        group: "This workspace",
+        icon: Brain,
+        run: () => setTab("review"),
+      },
     ],
     [workspaceId],
   );
