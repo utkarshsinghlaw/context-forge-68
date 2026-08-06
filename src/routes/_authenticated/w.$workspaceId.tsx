@@ -30,6 +30,7 @@ import { MemoryPanel } from "@/components/app/workspace/memory-panel";
 import { AskPanel } from "@/components/app/workspace/ask-panel";
 import { SessionsPanel } from "@/components/app/workspace/sessions-panel";
 import { GraphPanel } from "@/components/app/workspace/graph-panel";
+import { ReviewPanel } from "@/components/app/workspace/review-panel";
 import {
   MoreHorizontal,
   Trash2,
@@ -38,6 +39,7 @@ import {
   CheckSquare,
   Sparkles,
   Mic,
+  Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
