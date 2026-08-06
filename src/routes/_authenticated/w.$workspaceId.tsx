@@ -51,7 +51,7 @@ export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
   component: WorkspacePage,
 });
 
-const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory", "graph"] as const;
+const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory", "graph", "review"] as const;
 
 function WorkspacePage() {
   const { workspaceId } = Route.useParams();
