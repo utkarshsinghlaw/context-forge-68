@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PanelEmpty } from "./panel-empty";
-import { listNotes, listMemory, type Note, type MemoryEntry } from "@/lib/api";
+import { listNotes, listMemory } from "@/lib/api";
 import {
   generateCards,
   listDueCards,
