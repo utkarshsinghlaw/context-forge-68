@@ -10,6 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -40,9 +41,12 @@ import {
   Sparkles,
   Mic,
   Brain,
+  Download,
+  FileJson,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { exportWorkspace } from "@/lib/export";
 
 export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
   validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
@@ -62,6 +66,21 @@ function WorkspacePage() {
     initialTab && (TABS as readonly string[]).includes(initialTab) ? initialTab : "overview",
   );
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  async function runExport(format: "json" | "markdown") {
+    if (exporting) return;
+    setExporting(true);
+    const toastId = toast.loading("Preparing export…");
+    try {
+      await exportWorkspace(workspaceId, format);
+      toast.success(`Exported as ${format === "json" ? "JSON" : "Markdown"}`, { id: toastId });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed", { id: toastId });
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const {
     data: workspace,
@@ -126,6 +145,20 @@ function WorkspacePage() {
         icon: Brain,
         run: () => setTab("review"),
       },
+      {
+        id: "ws-export-md",
+        label: "Export workspace as Markdown",
+        group: "This workspace",
+        icon: Download,
+        run: () => runExport("markdown"),
+      },
+      {
+        id: "ws-export-json",
+        label: "Export workspace as JSON",
+        group: "This workspace",
+        icon: FileJson,
+        run: () => runExport("json"),
+      },
     ],
     [workspaceId],
   );
@@ -177,6 +210,13 @@ function WorkspacePage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem disabled={exporting} onClick={() => runExport("markdown")}>
+              <Download className="h-4 w-4" /> Export as Markdown
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={exporting} onClick={() => runExport("json")}>
+              <FileJson className="h-4 w-4" /> Export as JSON
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem className="text-destructive" onClick={() => setConfirmDelete(true)}>
               <Trash2 className="h-4 w-4" /> Delete workspace
             </DropdownMenuItem>
