@@ -32,6 +32,7 @@ import { AskPanel } from "@/components/app/workspace/ask-panel";
 import { SessionsPanel } from "@/components/app/workspace/sessions-panel";
 import { GraphPanel } from "@/components/app/workspace/graph-panel";
 import { ReviewPanel } from "@/components/app/workspace/review-panel";
+import { InsightsPanel } from "@/components/app/workspace/insights-panel";
 import {
   MoreHorizontal,
   Trash2,
@@ -43,6 +44,7 @@ import {
   Brain,
   Download,
   FileJson,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -55,7 +57,18 @@ export const Route = createFileRoute("/_authenticated/w/$workspaceId")({
   component: WorkspacePage,
 });
 
-const TABS = ["overview", "live", "ask", "notes", "tasks", "documents", "memory", "graph", "review"] as const;
+const TABS = [
+  "overview",
+  "live",
+  "ask",
+  "notes",
+  "tasks",
+  "documents",
+  "memory",
+  "graph",
+  "review",
+  "insights",
+] as const;
 
 function WorkspacePage() {
   const { workspaceId } = Route.useParams();
@@ -159,6 +172,13 @@ function WorkspacePage() {
         icon: FileJson,
         run: () => runExport("json"),
       },
+      {
+        id: "ws-go-insights",
+        label: "Open workspace insights",
+        group: "This workspace",
+        icon: BarChart3,
+        run: () => setTab("insights"),
+      },
     ],
     [workspaceId],
   );
@@ -259,6 +279,9 @@ function WorkspacePage() {
         </TabsContent>
         <TabsContent value="review" className="mt-6">
           <ReviewPanel workspaceId={workspaceId} />
+        </TabsContent>
+        <TabsContent value="insights" className="mt-6">
+          <InsightsPanel workspaceId={workspaceId} />
         </TabsContent>
       </Tabs>
 
