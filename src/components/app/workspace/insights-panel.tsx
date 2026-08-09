@@ -77,8 +77,8 @@ export function InsightsPanel({ workspaceId }: { workspaceId: string }) {
             <AreaChart data={data.activity} margin={{ left: -24, right: 8, top: 8 }}>
               <defs>
                 <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                  <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
@@ -94,16 +94,16 @@ export function InsightsPanel({ workspaceId }: { workspaceId: string }) {
               <Tooltip
                 contentStyle={{
                   borderRadius: 12,
-                  border: "1px solid hsl(var(--border))",
-                  background: "hsl(var(--popover))",
-                  color: "hsl(var(--popover-foreground))",
+                  border: "1px solid var(--border)",
+                  background: "var(--popover)",
+                  color: "var(--popover-foreground)",
                   fontSize: 12,
                 }}
               />
               <Area
                 type="monotone"
                 dataKey="count"
-                stroke="hsl(var(--primary))"
+                stroke="var(--primary)"
                 strokeWidth={2}
                 fill="url(#activityFill)"
               />
