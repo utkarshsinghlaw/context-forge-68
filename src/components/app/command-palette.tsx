@@ -14,7 +14,7 @@ import { listWorkspaces } from "@/lib/api";
 import { kindMeta } from "@/lib/workspace-meta";
 import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
-import { Home, Vault, Plus, Moon, Sun, LogOut, ArrowRight, Search, Settings } from "lucide-react";
+import { Home, Vault, Plus, Moon, Sun, LogOut, ArrowRight, Search, Settings, CalendarCheck } from "lucide-react";
 
 export function CommandPalette() {
   const { open, setOpen, actions } = useCommand();
@@ -58,6 +58,12 @@ export function CommandPalette() {
         ))}
 
         <CommandGroup heading="Navigate">
+          <CommandItem
+            value="today briefing due tasks review queue"
+            onSelect={() => go(() => navigate({ to: "/today" }))}
+          >
+            <CalendarCheck className="h-4 w-4" /> Today
+          </CommandItem>
           <CommandItem
             value="home workspaces overview"
             onSelect={() => go(() => navigate({ to: "/home" }))}
