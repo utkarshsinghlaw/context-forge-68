@@ -32,6 +32,7 @@ import {
   Shield,
   Settings,
 } from "lucide-react";
+import { CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
@@ -65,6 +66,9 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
       </Link>
 
       <nav className="space-y-1">
+        <Link to="/today" onClick={onNavigate} className={navItem(pathname === "/today")}>
+          <CalendarCheck className="h-4 w-4" /> Today
+        </Link>
         <Link to="/home" onClick={onNavigate} className={navItem(pathname === "/home")}>
           <Home className="h-4 w-4" /> Workspaces
         </Link>
