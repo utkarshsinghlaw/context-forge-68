@@ -21,7 +21,17 @@ const EXT: Record<string, string> = {
 export const transcribeTurn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => TranscribeInput.parse(input))
-  .handler(async ({ data }): Promise<{ text: string }> => {
+  .handler(async ({ data, context }): Promise<{ text: string }> => {
+    const { supabase, userId } = context;
+    const { data: isAllowed, error: rlError } = await supabase.rpc("check_rate_limit", {
+      p_user_id: userId,
+      p_endpoint: "transcribeTurn",
+      p_limit: 100,
+      p_window_seconds: 3600
+    });
+    if (rlError) throw new Error(rlError.message);
+    if (!isAllowed) throw new Error("Rate limit exceeded. Please try again later.");
+
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("Missing LOVABLE_API_KEY");
 

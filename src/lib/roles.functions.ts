@@ -52,7 +52,12 @@ export const claimAdminIfNone = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: userId, role: "admin" });
-    if (error) throw new Error(error.message);
+    if (error) {
+      if (error.code === '23505') {
+        return { claimed: false };
+      }
+      throw new Error(error.message);
+    }
     return { claimed: true };
   });
 
