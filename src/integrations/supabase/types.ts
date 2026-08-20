@@ -460,6 +460,7 @@ export type Database = {
           started_at: string
           status: Database["public"]["Enums"]["session_status"]
           summary: string | null
+          working_memory: string | null
           title: string
           updated_at: string
           user_id: string
@@ -472,6 +473,7 @@ export type Database = {
           started_at?: string
           status?: Database["public"]["Enums"]["session_status"]
           summary?: string | null
+          working_memory?: string | null
           title?: string
           updated_at?: string
           user_id: string
@@ -484,6 +486,7 @@ export type Database = {
           started_at?: string
           status?: Database["public"]["Enums"]["session_status"]
           summary?: string | null
+          working_memory?: string | null
           title?: string
           updated_at?: string
           user_id?: string

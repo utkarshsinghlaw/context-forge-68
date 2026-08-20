@@ -65,14 +65,14 @@ export interface ChatMessage {
 }
 
 /** Non-streaming chat completion. Returns the assistant text. */
-export async function chatComplete(messages: ChatMessage[]): Promise<string> {
+export async function chatComplete(messages: ChatMessage[], model: string = CHAT_MODEL): Promise<string> {
   const res = await fetch(`${GATEWAY}/chat/completions`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       Authorization: `Bearer ${apiKey()}`,
     },
-    body: JSON.stringify({ model: CHAT_MODEL, messages, temperature: 0.2 }),
+    body: JSON.stringify({ model, messages, temperature: 0.2 }),
   });
   if (!res.ok) throw friendlyError(res.status, await res.text());
   const json = (await res.json()) as {
@@ -86,14 +86,14 @@ export async function chatComplete(messages: ChatMessage[]): Promise<string> {
  * gateway; callers parse the `data:` deltas. Throws a friendly error on
  * non-2xx so the route can surface it before streaming begins.
  */
-export async function openChatStream(messages: ChatMessage[]): Promise<Response> {
+export async function openChatStream(messages: ChatMessage[], model: string = CHAT_MODEL): Promise<Response> {
   const res = await fetch(`${GATEWAY}/chat/completions`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
       Authorization: `Bearer ${apiKey()}`,
     },
-    body: JSON.stringify({ model: CHAT_MODEL, messages, temperature: 0.2, stream: true }),
+    body: JSON.stringify({ model, messages, temperature: 0.2, stream: true }),
   });
   if (!res.ok || !res.body) throw friendlyError(res.status, await res.text());
   return res;
