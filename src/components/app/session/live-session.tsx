@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -377,7 +377,7 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
                   const Icon = sourceIcon[c.source_type] ?? FileText;
                   return (
                     <span
-                      key={${c.source_id}-}
+                      key={`${c.source_id}-${i}`}
                       className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground"
                     >
                       <Icon className="h-3 w-3" /> [{i + 1}] {c.source_title || "Untitled"}
@@ -470,7 +470,7 @@ function TurnBubble({ turn }: { turn: SessionTurn }) {
               const Icon = sourceIcon[c.source_type] ?? FileText;
               return (
                 <span
-                  key={${c.source_id}-}
+                  key={`${c.source_id}-${i}`}
                   className="inline-flex items-center gap-1 rounded-full bg-background px-2 py-0.5 text-[11px] text-muted-foreground"
                 >
                   <Icon className="h-3 w-3" /> [{i + 1}] {c.source_title || "Untitled"}

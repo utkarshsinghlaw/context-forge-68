@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/lib/auth.functions";
-import { createClient } from "@deepgram/sdk";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const getDeepgramToken = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -23,7 +22,8 @@ export const getDeepgramToken = createServerFn({ method: "POST" })
       throw new Error("Deepgram credentials not configured on server.");
     }
 
-    const deepgram = createClient(apiKey);
+    const pkg = await import("@deepgram/sdk");
+    const deepgram = pkg.createClient(apiKey);
     const { result, error } = await deepgram.manage.createProjectKey(projectId, {
       comment: `temp-session-${userId}`,
       scopes: ["usage:write"],
