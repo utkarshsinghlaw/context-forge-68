@@ -24,6 +24,9 @@ export const getDeepgramToken = createServerFn({ method: "POST" })
     }
 
     const deepgram = new DeepgramClient({ apiKey });
+    // FIXED: Upgraded to Deepgram SDK v5 structure. 
+    // Previously it was calling a non-existent method `deepgram.manage.createProjectKey`
+    // SDK v5 uses nested versioned namespaces and throws exceptions natively.
     try {
       const response = await deepgram.manage.v1.projects.keys.create(projectId, {
         comment: `temp-session-${userId}`,

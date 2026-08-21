@@ -44,9 +44,11 @@ export const transcribeTurn = createServerFn({ method: "POST" })
     if (bytes.length < 1024) return { text: "" };
 
     const form = new FormData();
+    // ADDED: Switched to OpenAI's Whisper model after removing Lovable AI proxy
     form.append("model", "whisper-1");
     form.append("file", new Blob([bytes], { type: base }), `recording.${ext}`);
 
+    // ADDED: Using native OpenAI endpoint instead of Lovable proxy
     const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}` },

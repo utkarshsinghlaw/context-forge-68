@@ -1,6 +1,9 @@
 /**
- * Server-only helpers for the Lovable AI Gateway.
- * These read LOVABLE_API_KEY and must never be imported by client code.
+ * Server-only helpers for connecting natively to the OpenAI API.
+ * 
+ * ADDED: We replaced the legacy Lovable AI Gateway proxy (`ai.gateway.lovable.dev`) 
+ * with direct requests to `api.openai.com` to remove vendor lock-in. 
+ * This requires the user to supply their own `OPENAI_API_KEY` in the `.env` file.
  */
 
 const GATEWAY = "https://api.openai.com/v1";

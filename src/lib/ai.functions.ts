@@ -15,6 +15,11 @@ interface SourceRow {
   text: string;
 }
 
+/** 
+ * Reindex all text for a workspace into vector chunks.
+ * ADDED: We now explicitly include the `meetings` table in the source arrays so 
+ * transcripts get fed into the RAG Knowledge Graph upon index rebuilding.
+ */
 export const reindexWorkspace = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ReindexInput.parse(input))
@@ -127,8 +132,9 @@ const SourceRef = z.object({
 });
 
 /**
- * Re-embed a single source (note / document / memory) and replace its chunks.
+ * Re-embed a single source (note / document / memory / meeting) and replace its chunks.
  * Called automatically after a create or update so retrieval stays live.
+ * ADDED: Modified to support extracting the `transcript` column from the `meetings` table.
  */
 export const indexSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
