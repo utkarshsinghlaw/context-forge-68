@@ -23,6 +23,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedWWorkspaceIdRouteImport } from './routes/_authenticated/w.$workspaceId'
 import { Route as AuthenticatedSessionSessionIdRouteImport } from './routes/_authenticated/session.$sessionId'
+import { Route as AuthenticatedWWorkspaceIdMeetingsMeetingIdRouteImport } from './routes/_authenticated/w_.$workspaceId.meetings.$meetingId'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -95,6 +96,12 @@ const AuthenticatedSessionSessionIdRoute =
     path: '/session/$sessionId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute =
+  AuthenticatedWWorkspaceIdMeetingsMeetingIdRouteImport.update({
+    id: '/w_/$workspaceId/meetings/$meetingId',
+    path: '/w/$workspaceId/meetings/$meetingId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/api/session-suggest': typeof ApiSessionSuggestRoute
   '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
+  '/w/$workspaceId/meetings/$meetingId': typeof AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -125,6 +133,7 @@ export interface FileRoutesByTo {
   '/api/session-suggest': typeof ApiSessionSuggestRoute
   '/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
+  '/w/$workspaceId/meetings/$meetingId': typeof AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -142,6 +151,7 @@ export interface FileRoutesById {
   '/api/session-suggest': typeof ApiSessionSuggestRoute
   '/_authenticated/session/$sessionId': typeof AuthenticatedSessionSessionIdRoute
   '/_authenticated/w/$workspaceId': typeof AuthenticatedWWorkspaceIdRoute
+  '/_authenticated/w_/$workspaceId/meetings/$meetingId': typeof AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/api/session-suggest'
     | '/session/$sessionId'
     | '/w/$workspaceId'
+    | '/w/$workspaceId/meetings/$meetingId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/api/session-suggest'
     | '/session/$sessionId'
     | '/w/$workspaceId'
+    | '/w/$workspaceId/meetings/$meetingId'
   id:
     | '__root__'
     | '/'
@@ -190,6 +202,7 @@ export interface FileRouteTypes {
     | '/api/session-suggest'
     | '/_authenticated/session/$sessionId'
     | '/_authenticated/w/$workspaceId'
+    | '/_authenticated/w_/$workspaceId/meetings/$meetingId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSessionSessionIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/w_/$workspaceId/meetings/$meetingId': {
+      id: '/_authenticated/w_/$workspaceId/meetings/$meetingId'
+      path: '/w/$workspaceId/meetings/$meetingId'
+      fullPath: '/w/$workspaceId/meetings/$meetingId'
+      preLoaderRoute: typeof AuthenticatedWWorkspaceIdMeetingsMeetingIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -313,6 +333,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
   AuthenticatedSessionSessionIdRoute: typeof AuthenticatedSessionSessionIdRoute
   AuthenticatedWWorkspaceIdRoute: typeof AuthenticatedWWorkspaceIdRoute
+  AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute: typeof AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -324,6 +345,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
   AuthenticatedSessionSessionIdRoute: AuthenticatedSessionSessionIdRoute,
   AuthenticatedWWorkspaceIdRoute: AuthenticatedWWorkspaceIdRoute,
+  AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute:
+    AuthenticatedWWorkspaceIdMeetingsMeetingIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

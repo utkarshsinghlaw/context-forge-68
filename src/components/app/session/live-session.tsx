@@ -214,7 +214,7 @@ export function LiveSession({ sessionId }: { sessionId: string }) {
       if (!token) throw new Error("Your session expired. Please sign in again.");
       const res = await fetch("/api/session-suggest", {
         method: "POST",
-        headers: { "content-type": "application/json", Authorization: Bearer  },
+        headers: { "content-type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ workspaceId: session.workspace_id, prompt: p }),
         signal: controller.signal,
       });

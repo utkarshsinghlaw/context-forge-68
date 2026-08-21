@@ -32,8 +32,8 @@ export const transcribeTurn = createServerFn({ method: "POST" })
     if (rlError) throw new Error(rlError.message);
     if (!isAllowed) throw new Error("Rate limit exceeded. Please try again later.");
 
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Missing LOVABLE_API_KEY");
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) throw new Error("Missing OPENAI_API_KEY");
 
     const base = data.mimeType.split(";")[0];
     const ext = EXT[base] ?? "webm";
@@ -44,10 +44,10 @@ export const transcribeTurn = createServerFn({ method: "POST" })
     if (bytes.length < 1024) return { text: "" };
 
     const form = new FormData();
-    form.append("model", "openai/gpt-4o-mini-transcribe");
+    form.append("model", "whisper-1");
     form.append("file", new Blob([bytes], { type: base }), `recording.${ext}`);
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
+    const res = await fetch("https://api.openai.com/v1/audio/transcriptions", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}` },
       body: form,

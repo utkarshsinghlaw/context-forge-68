@@ -3,14 +3,14 @@
  * These read LOVABLE_API_KEY and must never be imported by client code.
  */
 
-const GATEWAY = "https://ai.gateway.lovable.dev/v1";
+const GATEWAY = "https://api.openai.com/v1";
 
-export const EMBED_MODEL = "openai/text-embedding-3-small"; // 1536 dims
-export const CHAT_MODEL = "google/gemini-3-flash-preview";
+export const EMBED_MODEL = "text-embedding-3-small"; // 1536 dims
+export const CHAT_MODEL = "gpt-4o-mini";
 
 function apiKey(): string {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("Missing LOVABLE_API_KEY");
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error("Missing OPENAI_API_KEY in .env");
   return key;
 }
 

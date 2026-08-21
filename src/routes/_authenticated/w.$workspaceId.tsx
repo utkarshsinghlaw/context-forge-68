@@ -33,6 +33,7 @@ import { SessionsPanel } from "@/components/app/workspace/sessions-panel";
 import { GraphPanel } from "@/components/app/workspace/graph-panel";
 import { ReviewPanel } from "@/components/app/workspace/review-panel";
 import { InsightsPanel } from "@/components/app/workspace/insights-panel";
+import { MeetingsPanel } from "@/components/app/workspace/meetings-panel";
 import {
   MoreHorizontal,
   Trash2,
@@ -68,6 +69,7 @@ const TABS = [
   "graph",
   "review",
   "insights",
+  "meetings",
 ] as const;
 
 function WorkspacePage() {
@@ -282,6 +284,9 @@ function WorkspacePage() {
         </TabsContent>
         <TabsContent value="insights" className="mt-6">
           <InsightsPanel workspaceId={workspaceId} />
+        </TabsContent>
+        <TabsContent value="meetings" className="mt-6">
+          <MeetingsPanel workspaceId={workspaceId} />
         </TabsContent>
       </Tabs>
 
