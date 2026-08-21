@@ -85,14 +85,14 @@ export const Route = createFileRoute("/api/chat")({
             // Note: Since the frontend currently doesn't send sessionId, we query the most recent session for this workspace
             const { data: session } = await supabase
               .from("sessions")
-              .select("working_memory")
+              .select("summary")
               .eq("workspace_id", body.workspaceId)
               .order("started_at", { ascending: false })
               .limit(1)
               .single();
               
-            if (session?.working_memory) {
-              contextBlocks = `<working_memory>\n${session.working_memory}\n</working_memory>`;
+            if (session?.summary) {
+              contextBlocks = `<working_memory>\n${session.summary}\n</working_memory>`;
             }
           }
 

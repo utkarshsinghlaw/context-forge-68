@@ -167,7 +167,7 @@ function NewWorkspaceDialog({
       setDescription("");
       navigate({ to: "/w/$workspaceId", params: { workspaceId: w.id } });
     },
-    onError: () => toast.error("Could not create workspace"),
+    onError: (e: any) => toast.error(e?.message || "Could not create workspace"),
   });
 
   return (

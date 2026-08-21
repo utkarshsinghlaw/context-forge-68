@@ -8,13 +8,18 @@ import { chunkText } from "@/lib/chunk";
 const ReindexInput = z.object({ workspaceId: z.string().uuid() });
 
 interface SourceRow {
-  source_type: "note" | "document" | "memory";
+  source_type: "note" | "document" | "memory" | "meeting";
   source_id: string;
   source_title: string;
   workspace_id: string | null;
   text: string;
 }
 
+/** 
+ * Reindex all text for a workspace into vector chunks.
+ * ADDED: We now explicitly include the `meetings` table in the source arrays so 
+ * transcripts get fed into the RAG Knowledge Graph upon index rebuilding.
+ */
 export const reindexWorkspace = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => ReindexInput.parse(input))
@@ -23,7 +28,7 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
     const { workspaceId } = data;
     const { embedTexts } = await import("@/lib/ai-gateway.server");
 
-    const [notes, docs, wsMem, vaultMem] = await Promise.all([
+    const [notes, docs, wsMem, vaultMem, meetings] = await Promise.all([
       supabase.from("notes").select("id,title,content").eq("workspace_id", workspaceId),
       supabase.from("documents").select("id,title,content").eq("workspace_id", workspaceId),
       supabase.from("memory_entries").select("id,title,content").eq("workspace_id", workspaceId),
@@ -32,6 +37,7 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
         .select("id,title,content")
         .eq("layer", "vault")
         .is("workspace_id", null),
+      supabase.from("meetings").select("id,title,transcript").eq("workspace_id", workspaceId),
     ]);
 
     const sources: SourceRow[] = [];
@@ -66,6 +72,14 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
         source_title: m.title,
         workspace_id: null,
         text: `${m.title}\n\n${m.content ?? ""}`,
+      });
+    for (const mtg of meetings.data ?? [])
+      sources.push({
+        source_type: "meeting",
+        source_id: mtg.id,
+        source_title: mtg.title,
+        workspace_id: workspaceId,
+        text: `${mtg.title}\n\n${mtg.transcript ?? ""}`,
       });
 
     // Build chunk records.
@@ -113,13 +127,14 @@ export const reindexWorkspace = createServerFn({ method: "POST" })
 /* ----------------------- Incremental indexing ----------------------- */
 
 const SourceRef = z.object({
-  sourceType: z.enum(["note", "document", "memory"]),
+  sourceType: z.enum(["note", "document", "memory", "meeting"]),
   sourceId: z.string().uuid(),
 });
 
 /**
- * Re-embed a single source (note / document / memory) and replace its chunks.
+ * Re-embed a single source (note / document / memory / meeting) and replace its chunks.
  * Called automatically after a create or update so retrieval stays live.
+ * ADDED: Modified to support extracting the `transcript` column from the `meetings` table.
  */
 export const indexSource = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -130,10 +145,20 @@ export const indexSource = createServerFn({ method: "POST" })
     const { embedTexts } = await import("@/lib/ai-gateway.server");
 
     const table =
-      sourceType === "note" ? "notes" : sourceType === "document" ? "documents" : "memory_entries";
+      sourceType === "note"
+        ? "notes"
+        : sourceType === "document"
+          ? "documents"
+          : sourceType === "meeting"
+            ? "meetings"
+            : "memory_entries";
+            
+    // For meetings we need the 'transcript' column instead of 'content'
+    const selectCols = sourceType === "meeting" ? "id,title,transcript,workspace_id" : "id,title,content,workspace_id";
+    
     const { data: row } = await supabase
       .from(table)
-      .select("id,title,content,workspace_id")
+      .select(selectCols)
       .eq("id", sourceId)
       .maybeSingle();
 
@@ -148,7 +173,9 @@ export const indexSource = createServerFn({ method: "POST" })
     if (!row) return { indexed: 0 };
 
     const title = (row as { title?: string }).title ?? "";
-    const content = (row as { content?: string }).content ?? "";
+    const content = sourceType === "meeting" 
+      ? ((row as { transcript?: string }).transcript ?? "")
+      : ((row as { content?: string }).content ?? "");
     const workspace_id = (row as { workspace_id?: string | null }).workspace_id ?? null;
     const parts = chunkText(`${title}\n\n${content}`);
     if (parts.length === 0) return { indexed: 0 };
